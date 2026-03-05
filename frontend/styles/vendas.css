@@ -1,0 +1,349 @@
+:root {
+  --bg: #d9e6df;
+  --card: #f7f7f7;
+  --text-main: #536a59;
+  --text-secondary: #2f4862;
+  --field-border: #c6ccd3;
+  --button: #5e745f;
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+/* ================= LAYOUT ================= */
+
+.dashboard-layout,
+.sales-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px var(--shadow);
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+  padding: 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-main);
+}
+
+.subtitle {
+  margin: 4px 0 24px;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.menu {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.menu-btn,
+button {
+  border: 0;
+  border-radius: 10px;
+  background: var(--button);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.14);
+}
+
+.menu-btn {
+  padding: 14px 12px;
+  font-size: 1rem;
+}
+
+.menu-btn.active,
+.menu-btn:hover {
+  filter: brightness(1.06);
+}
+
+.footer-location {
+  margin: auto 0 0;
+  color: #697a8f;
+  font-size: 0.95rem;
+  padding-top: 20px;
+}
+
+/* ================= CONTENT ================= */
+
+.content-area {
+  display: grid;
+  gap: 20px;
+}
+
+.content-header {
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+h2 {
+  margin: 0 0 6px;
+  color: var(--text-main);
+  font-size: 1.8rem;
+}
+
+.content-header p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.primary-btn {
+  min-width: 180px;
+  height: 52px;
+  font-size: 1rem;
+  padding: 0 18px;
+}
+
+/* ================= MÉTRICAS ================= */
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.metric {
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.metric h3 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.metric-value {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.metric button {
+  height: 42px;
+  font-size: 0.95rem;
+}
+
+/* ================= VENDAS ================= */
+
+.sales-workspace {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+}
+
+.sale-form-card,
+.cart-card {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.sale-form-card h3,
+.cart-card h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #3a5676;
+}
+
+.field-label {
+  font-weight: 700;
+  color: #355271;
+  font-size: 1rem;
+}
+
+.sale-form-card input,
+.sale-form-card select {
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid var(--field-border);
+  padding: 0 12px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.sale-add-btn,
+.finalize-btn {
+  min-height: 50px;
+  padding: 8px 14px;
+  font-size: 1.05rem;
+}
+
+/* ================= CARRINHO ================= */
+
+.cart-item {
+  border-radius: 10px;
+  padding: 14px;
+  background: #efefef;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cart-item h4 {
+  margin: 0;
+  color: #648063;
+}
+
+.cart-item p {
+  margin: 6px 0 0;
+  color: #546d63;
+}
+
+.cart-item strong {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--button);
+  font-size: 1.1rem;
+}
+
+.delete-item {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  background: #dd3f3f;
+}
+
+/* ================= TOTAIS ================= */
+
+.totals-box {
+  background: #dce8dc;
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid #c5d3c4;
+}
+
+.line-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  color: #2d4b41;
+}
+
+.total-row {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #b5c6b5;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--button);
+}
+
+/* ================= RESPONSIVIDADE ================= */
+
+@media (max-width: 1080px) {
+  .dashboard-layout,
+  .sales-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sales-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-layout,
+  .sales-layout {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .sale-form-card,
+  .cart-card,
+  .metric {
+    padding: 16px;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .primary-btn,
+  .sale-add-btn,
+  .finalize-btn,
+  .metric button {
+    width: 100%;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-info {
+  background: #c9d7c8;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: none;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.cart-item {
+  background: #efefef;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-item {
+  background: #d64545;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+}

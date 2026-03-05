@@ -1,0 +1,89 @@
+.btn-list,
+.btn-edit,
+.btn-danger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-list {
+  background-color: #6f8864;
+  color: #fff;
+}
+
+.btn-list:hover {
+  background-color: #fff;
+  color: #6f8864;
+  border: 1px solid #6f8864;
+}
+
+.btn-edit {
+  background-color: #6f8864;
+  color: #fff;
+}
+
+.btn-edit:hover {
+  background-color: #fff;
+  color: #6f8864;
+  border: 1px solid #6f8864;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #fff;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* ============================= */
+/* MODAL COMPRAS */
+/* ============================= */
+
+#purchasesModal .modal-content {
+  width: 600px;
+  max-width: 95%;
+}
+
+#purchasesList {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+#purchasesList div {
+  background: #f8fbff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#generatePDFBtn {
+  margin-top: 15px;
+  width: 100%;
+  background-color: #6f8864;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#generatePDFBtn:hover {
+  background-color: #6f8864;
+  color: #94b686;
+}

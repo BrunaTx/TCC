@@ -4,102 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>A Essência do Mar - Dashboard</title>
-    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/dashboard.css" />
   </head>
   <body>
     <div class="dashboard-layout">
-      <aside class="sidebar card">
-        <div class="brand-icon" aria-hidden="true">≋</div>
-        <h1>A Essência do Mar</h1>
-        <p class="subtitle">Painel Administrativo</p>
+      <aside class="sidebar" aria-label="Barra lateral">
+        <header class="sidebar-brand">
+          <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+          <div class="brand-row">
+        
+            <img 
+              src="../images/essencia.png" 
+              alt="Logo Essência do Mar" 
+              class="brand-logo"
+            />
 
-        <nav class="menu" aria-label="Menu principal">
-          <button type="button" class="menu-btn active">Visão Geral</button>
-          <button type="button" class="menu-btn">Cadastro de Cliente</button>
-          <button type="button" class="menu-btn">Cadastro de Produto</button>
-          <button type="button" class="menu-btn">Realizar Venda</button>
-          <button type="button" class="menu-btn">Relatórios</button>
-          <button type="button" class="menu-btn">Estoque</button>
-          <button type="button" class="menu-btn">Financeiro</button>
-          <button type="button" class="menu-btn">Configurações</button>
-        </nav>
+            <div>
+              <h1>Essência do Mar</h1>
+              <p>Pontal do Paraná</p>
+            </div>
+          </div>
+        </header>
 
-        <p class="footer-location">Pontal do Paraná - PR</p>
+       <nav class="menu" aria-label="Menu principal">
+
+  <a class="menu-item active" href="#">
+    <span class="material-symbols-outlined">home</span>
+    <span>Página Inicial</span>
+  </a>
+
+  <a class="menu-item" href="produtos.html">
+  <span class="material-symbols-outlined">inventory_2</span>
+  <span>Produtos</span>
+</a>
+
+<a class="menu-item" href="categorias.html">
+    <span class="material-symbols-outlined">category</span>
+    <span>Categorias</span>
+  </a>
+
+   <a class="menu-item" href="clientes.html">
+    <span class="material-symbols-outlined">person_add</span>
+    <span>Clientes</span>
+  </a>
+
+  <a class="menu-item" href="vendas.html">
+    <span class="material-symbols-outlined">point_of_sale</span>
+    <span>Vendas</span>
+  </a>
+
+  <a class="menu-item" href="#">
+    <span class="material-symbols-outlined">store</span>
+    <span>Estoque</span>
+  </a>
+
+  <a class="menu-item" href="#">
+    <span class="material-symbols-outlined">description</span>
+    <span>Relatórios</span>
+  </a>
+
+</nav>
+
+       <button type="button" class="settings-btn">
+  <span class="material-symbols-outlined">logout</span>
+  Sair
+</button>
       </aside>
 
       <main class="content-area">
-        <header class="content-header card">
-          <div>
-            <h2>Dashboard de Gestão</h2>
-            <p>Acompanhe operações, vendas e desempenho em tempo real.</p>
-          </div>
-          <button type="button" class="primary-btn">+ Nova Venda</button>
+        <header class="top-card">
+          <h2>Seja Bem-Vinda, Chefe!</h2>
+          <p id="dateLabel"></p>
         </header>
 
-        <section class="metrics-grid" aria-label="Indicadores principais">
-          <article class="metric card">
-            <h3>Clientes Cadastrados</h3>
-            <p class="metric-value">1.248</p>
-            <button type="button">Gerenciar Clientes</button>
+        <section class="stats-grid">
+          <article class="stat-card">
+            <h3>Faturamento Hoje</h3>
+            <p class="value">R$ 0.00</p>
+            <p class="meta">0 vendas realizadas</p>
           </article>
 
-          <article class="metric card">
-            <h3>Produtos Ativos</h3>
-            <p class="metric-value">386</p>
-            <button type="button">Gerenciar Produtos</button>
+          <article class="stat-card light-accent">
+            <h3>Produtos Vendidos</h3>
+            <p class="value">0</p>
+            <p class="meta">itens no total</p>
           </article>
 
-          <article class="metric card">
-            <h3>Vendas do Dia</h3>
-            <p class="metric-value">R$ 18.420</p>
-            <button type="button">Abrir PDV</button>
-          </article>
-
-          <article class="metric card">
-            <h3>Pedidos Pendentes</h3>
-            <p class="metric-value">27</p>
-            <button type="button">Ver Pedidos</button>
+          <article class="stat-card">
+            <h3>Estoque Baixo</h3>
+            <p class="value">0</p>
+            <p class="meta">produtos abaixo de 10 unidades</p>
           </article>
         </section>
 
-        <section class="modules-grid" aria-label="Módulos completos">
-          <article class="module card">
-            <h3>Cadastro de Cliente</h3>
-            <p>Inclua novos clientes, edite dados, histórico de compras e status de crédito.</p>
-            <div class="module-actions">
-              <button type="button">Novo Cliente</button>
-              <button type="button" class="ghost">Consultar Cadastro</button>
-            </div>
-          </article>
-
-          <article class="module card">
-            <h3>Cadastro de Produto</h3>
-            <p>Cadastre produtos com categoria, fornecedor, custo, preço e controle de estoque.</p>
-            <div class="module-actions">
-              <button type="button">Novo Produto</button>
-              <button type="button" class="ghost">Importar Catálogo</button>
-            </div>
-          </article>
-
-          <article class="module card">
-            <h3>Realizar Venda</h3>
-            <p>Inicie uma venda rápida com cupom, desconto, múltiplas formas de pagamento e nota.</p>
-            <div class="module-actions">
-              <button type="button">Iniciar Venda</button>
-              <button type="button" class="ghost">Simular Orçamento</button>
-            </div>
-          </article>
-
-          <article class="module card">
-            <h3>Relatórios Completos</h3>
-            <p>Consulte relatórios de faturamento, lucro, estoque crítico e desempenho por período.</p>
-            <div class="module-actions">
-              <button type="button">Gerar Relatório</button>
-              <button type="button" class="ghost">Exportar PDF/Excel</button>
-            </div>
-          </article>
+        <section class="summary-card">
+          <h3>Resumo do Dia</h3>
+          <p>Sem movimentações registradas até o momento.</p>
         </section>
       </main>
     </div>
+
+    <script src="../js/dashboard.js"></script>
   </body>
 </html>

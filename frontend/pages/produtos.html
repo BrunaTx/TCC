@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Essência do Mar - Produtos</title>
+
+  <link rel="stylesheet" href="../styles/dashboard.css">
+  <link rel="stylesheet" href="../styles/produtos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-row">
+          <img src="../images/essencia.png" class="brand-logo">
+          <div>
+            <h1>Essência do Mar</h1>
+            <p>Pontal do Paraná</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a class="menu-item" href="dashboard.html">
+          <span class="material-symbols-outlined">home</span>
+          Página Inicial
+        </a>
+
+        <a class="menu-item active" href="#">
+          <span class="material-symbols-outlined">inventory_2</span>
+          Produtos
+        </a>
+
+         <a class="menu-item" href="categorias.html">
+          <span class="material-symbols-outlined">category</span>
+          Categorias
+        </a>
+
+        <a class="menu-item" href="clientes.html">
+          <span class="material-symbols-outlined">person_add</span>
+          Clientes
+        </a>
+
+        <a class="menu-item" href="vendas.html">
+          <span class="material-symbols-outlined">point_of_sale</span>
+          Vendas
+        </a>
+
+        <a class="menu-item" href="#">
+          <span class="material-symbols-outlined">store</span>
+          Estoque
+        </a>
+
+        <a class="menu-item" href="#">
+          <span class="material-symbols-outlined">description</span>
+          Relatórios
+        </a>
+      </nav>
+
+      <button class="settings-btn">
+        <span class="material-symbols-outlined">logout</span>
+        Sair
+      </button>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+
+      <div class="card page-header">
+        <h2>Produtos</h2>
+        <button id="openModalBtn" class="primary-btn">+ Novo Produto</button>
+      </div>
+
+      <div class="card products-section">
+        <div class="toolbar">
+          <label class="search-field">
+            Pesquisar
+            <input id="searchInput" type="search" placeholder="Buscar produto">
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th>Tipo</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODAL -->
+      <div id="productModal" class="modal hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Novo Produto</h3>
+            <button id="closeModalBtn" class="close-btn">×</button>
+          </div>
+
+          <form id="productForm" class="product-form">
+            <label>
+              Nome
+              <input type="text" name="nomeProduto" required>
+            </label>
+
+            <label>
+              Categoria
+              <select name="categoria" required>
+                <option value="">Selecione uma categoria</option>
+                <option value="Algas Marinhas">Algas Marinhas</option>
+                <option value="Peixes Frescos">Peixes Frescos</option>
+                <option value="Conservas">Conservas</option>
+                <option value="Frutos do Mar">Frutos do Mar</option>
+              </select>
+            </label>
+
+            <label>
+              Tipo
+              <select name="tipoVenda">
+                <option value="un">Unidade</option>
+                <option value="kg">Quilograma</option>
+              </select>
+            </label>
+
+            <label>
+              Preço
+              <input type="number" name="preco" step="0.01" required>
+            </label>
+
+            <label>
+              Estoque
+              <input type="number" id="estoqueInput" name="estoque" required>
+            </label>
+
+            <label>
+              Descrição
+              <textarea name="descricao" placeholder="Digite uma descrição opcional"></textarea>
+            </label>
+
+            <div class="form-actions">
+              <button type="button" id="cancelModalBtn" class="btn-cancel">Cancelar</button>
+              <button type="submit" class="btn-submit">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../js/produtos.js"></script>
+</body>
+</html>

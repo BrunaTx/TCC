@@ -10,11 +10,15 @@
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg);
   color: var(--text-main);
@@ -22,111 +26,105 @@ body {
 
 .page {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
 .card {
-  width: min(100%, 560px);
+  width: 100%;
+  max-width: 420px;
   background: var(--card);
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 8px 24px var(--shadow);
-  padding: 32px;
-  text-align: center;
+  padding: 28px;
 }
 
 .brand-icon {
-  width: 66px;
-  height: 66px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto 18px;
   border-radius: 50%;
   background: var(--button);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-  font-size: 34px;
-  line-height: 1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
 }
 
 h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--text-main);
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 6px;
 }
 
 .subtitle {
-  margin: 4px 0 32px;
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 24px;
   color: var(--text-secondary);
-  font-size: 1.3rem;
 }
 
 .login-form {
-  text-align: left;
-  display: grid;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 label {
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  font-weight: 700;
-  font-size: 1.35rem;
 }
 
 input {
   width: 100%;
   border: 1.5px solid var(--field-border);
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 1.9rem;
-  color: #1e2b2b;
-  background: transparent;
-  margin-bottom: 10px;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  outline: none;
 }
 
-input::placeholder {
-  color: #3a463f;
+input:focus {
+  border-color: var(--button);
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  padding-right: 40px;
+}
+
+.eye {
+  position: absolute;
+  right: 12px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  pointer-events: none;
 }
 
 button {
-  margin-top: 8px;
-  height: 72px;
-  border: 0;
-  border-radius: 10px;
+  margin-top: 14px;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
   background: var(--button);
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: 700;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.14);
 }
 
 .footer-location {
-  margin: 32px 0 0;
   text-align: center;
+  margin-top: 24px;
+  font-size: 0.85rem;
   color: #697a8f;
-  font-size: 1.25rem;
-}
-
-@media (max-width: 640px) {
-  .card {
-    padding: 24px;
-  }
-
-  .subtitle {
-    margin-bottom: 24px;
-  }
-
-  label {
-    font-size: 1.1rem;
-  }
-
-  input {
-    font-size: 1.1rem;
-  }
-
-  button {
-    font-size: 1.3rem;
-    height: 56px;
-  }
 }

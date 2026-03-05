@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Essência do Mar - Categorias</title>
+
+  <link rel="stylesheet" href="../styles/categorias.css">
+  <link rel="stylesheet" href="../styles/dashboard.css">
+  <link rel="stylesheet" href="../styles/produtos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-row">
+          <img src="../images/essencia.png" class="brand-logo">
+          <div>
+            <h1>Essência do Mar</h1>
+            <p>Pontal do Paraná</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a class="menu-item" href="dashboard.html">
+          <span class="material-symbols-outlined">home</span>
+          Página Inicial
+        </a>
+
+        <a class="menu-item" href="produtos.html">
+          <span class="material-symbols-outlined">inventory_2</span>
+          Produtos
+        </a>
+
+         <a class="menu-item active" href="#">
+          <span class="material-symbols-outlined">category</span>
+          Categorias
+        </a>
+
+         <a class="menu-item" href="clientes.html">
+          <span class="material-symbols-outlined">person_add</span>
+          Clientes
+        </a>
+
+        <a class="menu-item" href="vendas.html">
+          <span class="material-symbols-outlined">point_of_sale</span>
+          Vendas
+        </a>
+
+        <a class="menu-item" href="#">
+          <span class="material-symbols-outlined">store</span>
+          Estoque
+        </a>
+
+        <a class="menu-item" href="#">
+          <span class="material-symbols-outlined">description</span>
+          Relatórios
+        </a>
+      </nav>
+
+      <button class="settings-btn">
+        <span class="material-symbols-outlined">logout</span>
+        Sair
+      </button>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+
+      <div class="card page-header">
+        <h2>Categorias</h2>
+        <button id="openModalBtn" class="primary-btn">+ Nova Categoria</button>
+      </div>
+
+      <div class="card products-section">
+        <div class="toolbar">
+          <label class="search-field">
+            Pesquisar
+            <input id="searchInput" type="search" placeholder="Buscar categoria">
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="categoriesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODAL DE CADASTRO -->
+      <div id="categoryModal" class="modal hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Nova Categoria</h3>
+            <button id="closeModalBtn" class="close-btn">×</button>
+          </div>
+
+          <form id="categoryForm" class="product-form">
+            <label>
+              Nome da Categoria
+              <input type="text" name="nomeCategoria" required>
+            </label>
+
+            <div class="form-actions">
+              <button type="button" id="cancelModalBtn" class="btn-cancel">Cancelar</button>
+              <button type="submit" class="btn-submit">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL DE LISTA DE PRODUTOS -->
+      <div id="categoryProductsModal" class="modal hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Produtos da Categoria</h3>
+            <button id="closeProductsModalBtn" class="close-btn">×</button>
+          </div>
+          <div id="categoryProductsList" style="display:flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto;"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../js/categorias.js"></script>
+</body>
+</html>
