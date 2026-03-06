@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Essência do Mar - Relatórios</title>
+
+<link rel="stylesheet" href="../styles/vendas.css">
+<link rel="stylesheet" href="../styles/dashboard.css">
+<link rel="stylesheet" href="../styles/relatorios.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+<!-- BIBLIOTECA DO PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="layout">
+
+<aside class="sidebar">
+
+<div class="sidebar-top">
+<div class="brand-row">
+<img src="../images/essencia.png" class="brand-logo">
+<div>
+<h1>Essência do Mar</h1>
+<p>Pontal do Paraná</p>
+</div>
+</div>
+</div>
+
+<nav class="menu">
+
+<a class="menu-item" href="dashboard.html">
+<span class="material-symbols-outlined">home</span>
+Página Inicial
+</a>
+
+<a class="menu-item" href="produtos.html">
+<span class="material-symbols-outlined">inventory_2</span>
+Produtos
+</a>
+
+<a class="menu-item" href="categorias.html">
+<span class="material-symbols-outlined">category</span>
+Categorias
+</a>
+
+<a class="menu-item" href="clientes.html">
+<span class="material-symbols-outlined">person_add</span>
+Clientes
+</a>
+
+<a class="menu-item" href="vendas.html">
+<span class="material-symbols-outlined">point_of_sale</span>
+Vendas
+</a>
+
+<a class="menu-item" href="estoques.html">
+<span class="material-symbols-outlined">store</span>
+Estoque
+</a>
+
+<a class="menu-item active" href="relatorios.html">
+<span class="material-symbols-outlined">description</span>
+Relatórios
+</a>
+
+</nav>
+
+<button class="settings-btn" onclick="window.location.href='../index.html'">
+  <span class="material-symbols-outlined">logout</span>
+  Sair
+</button>
+
+</aside>
+
+
+
+<main class="content">
+
+<section class="card page-header">
+<h2>Relatórios</h2>
+
+<button id="generatePDFBtn" class="export-btn">
+<span class="material-symbols-outlined">description</span>
+Exportar PDF
+</button>
+
+</section>
+
+
+
+<section class="card filters">
+
+<div class="field-group">
+<label>Tipo de Relatório</label>
+
+<select id="reportType">
+<option value="Diário">Diário</option>
+<option value="Semanal">Semanal</option>
+<option value="Mensal">Mensal</option>
+</select>
+</div>
+
+
+
+<div class="field-group">
+<label>Data</label>
+<input type="text" id="reportDate" value="05/03/2026">
+</div>
+
+</section>
+
+
+
+<section class="stats-grid">
+
+<article class="stat-card">
+<h3>Total de Vendas</h3>
+<p class="value" id="totalVendas">0</p>
+<p class="meta">vendas realizadas</p>
+</article>
+
+
+<article class="stat-card">
+<h3>Itens Vendidos</h3>
+<p class="value" id="itensVendidos">0</p>
+<p class="meta">produtos vendidos</p>
+</article>
+
+
+<article class="stat-card">
+<h3>Faturamento</h3>
+<p class="value" id="faturamento">R$ 0.00</p>
+<p class="meta">receita total</p>
+</article>
+
+</section>
+
+
+
+<section class="card details-card">
+
+<h3>Detalhamento das Vendas</h3>
+
+<div id="purchasesList">
+
+<div>Produto: Perfume Oceano | Quantidade: 2 | Valor: R$ 80</div>
+<div>Produto: Creme Marinho | Quantidade: 1 | Valor: R$ 35</div>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+<script src="../js/relatorios.js"></script>
+
+</body>
+</html>

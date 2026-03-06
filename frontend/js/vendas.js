@@ -1,104 +1,162 @@
-const produtoSelect = document.getElementById("produtoSelect");
-const productInfo = document.getElementById("productInfo");
-const infoTipo = document.getElementById("infoTipo");
-const infoPreco = document.getElementById("infoPreco");
-const infoEstoque = document.getElementById("infoEstoque");
-const quantidadeInput = document.getElementById("quantidade");
-const cartItems = document.getElementById("cartItems");
-const totalsBox = document.getElementById("totalsBox");
+const clienteSelect = document.getElementById("clienteSelect")
+const produtoSelect = document.getElementById("produtoSelect")
+const quantidadeInput = document.getElementById("quantidade")
 
-let carrinho = [];
-let subtotal = 0;
+const infoTipo = document.getElementById("infoTipo")
+const infoPreco = document.getElementById("infoPreco")
+const infoEstoque = document.getElementById("infoEstoque")
+
+const productInfo = document.getElementById("productInfo")
+
+const cartItems = document.getElementById("cartItems")
+
+const subtotalEl = document.querySelector("#totalsBox .line-item span:last-child")
+const totalEl = document.querySelector(".total-row span:last-child")
+
+const addBtn = document.querySelector(".sale-add-btn")
+const finalizarBtn = document.querySelector(".finalize-btn")
+
+let carrinho = []
+let clienteCarrinho = null
+
+/* MOSTRAR INFORMAÇÕES DO PRODUTO */
 
 produtoSelect.addEventListener("change", () => {
-  const selected = produtoSelect.options[produtoSelect.selectedIndex];
 
-  const preco = parseFloat(selected.dataset.preco);
-  const estoque = parseInt(selected.dataset.estoque);
-  const tipo = selected.dataset.tipo;
+  const option = produtoSelect.selectedOptions[0]
 
-  infoTipo.textContent = tipo;
-  infoPreco.textContent = `R$ ${preco.toFixed(2)}`;
-  infoEstoque.textContent = estoque;
+  const preco = option.dataset.preco
+  const estoque = option.dataset.estoque
+  const tipo = option.dataset.tipo
 
-  productInfo.style.display = "block";
-});
+  infoTipo.textContent = tipo
+  infoPreco.textContent = `R$ ${Number(preco).toFixed(2)}`
+  infoEstoque.textContent = estoque
 
-document.querySelector(".sale-add-btn").addEventListener("click", () => {
-  const selected = produtoSelect.options[produtoSelect.selectedIndex];
+  quantidadeInput.max = estoque
 
-  if (!selected.dataset.preco) {
-    alert("Selecione um produto.");
-    return;
+  productInfo.style.display = "block"
+
+})
+
+/* ADICIONAR AO CARRINHO */
+
+addBtn.addEventListener("click", () => {
+
+  const cliente = clienteSelect.value
+
+  if (!cliente) {
+    alert("Selecione um cliente")
+    return
   }
 
-  const id = selected.value;
-  const nome = selected.textContent;
-  const preco = parseFloat(selected.dataset.preco);
-  let estoque = parseInt(selected.dataset.estoque);
-  const quantidade = parseInt(quantidadeInput.value);
+  const option = produtoSelect.selectedOptions[0]
 
-  if (quantidade <= 0 || quantidade > estoque) {
-    alert("Quantidade inválida.");
-    return;
+  if (!option || !option.dataset.preco) {
+    alert("Selecione um produto")
+    return
   }
 
-  const existente = carrinho.find(item => item.id === id);
+  const nome = option.textContent.split(" - ")[0]
+  const preco = Number(option.dataset.preco)
+  const estoque = Number(option.dataset.estoque)
+  const quantidade = Number(quantidadeInput.value)
 
-  if (existente) {
-    if (existente.quantidade + quantidade > estoque) {
-      alert("Estoque insuficiente.");
-      return;
-    }
-    existente.quantidade += quantidade;
-  } else {
-    carrinho.push({ id, nome, preco, quantidade });
+  if (quantidade <= 0) {
+    alert("Quantidade inválida")
+    return
   }
 
-  selected.dataset.estoque = estoque - quantidade;
-  atualizarCarrinho();
-});
+  if (quantidade > estoque) {
+    alert("Quantidade maior que o estoque disponível")
+    return
+  }
+
+  /* DEFINE O CLIENTE DO CARRINHO */
+  if (!clienteCarrinho) {
+    clienteCarrinho = cliente
+    clienteSelect.disabled = true
+  }
+
+  carrinho.push({
+    nome,
+    preco,
+    quantidade
+  })
+
+  atualizarCarrinho()
+
+})
+
+/* ATUALIZAR CARRINHO */
 
 function atualizarCarrinho() {
-  cartItems.innerHTML = "";
-  subtotal = 0;
+
+  cartItems.innerHTML = ""
+
+  let subtotal = 0
 
   carrinho.forEach((item, index) => {
-    const totalItem = item.preco * item.quantidade;
-    subtotal += totalItem;
 
-    const div = document.createElement("div");
-    div.classList.add("cart-item");
+    const totalItem = item.preco * item.quantidade
+    subtotal += totalItem
+
+    const div = document.createElement("div")
+    div.className = "cart-item"
 
     div.innerHTML = `
       <div>
         <h4>${item.nome}</h4>
-        <p>${item.quantidade} un × R$ ${item.preco.toFixed(2)}</p>
+        <p>${item.quantidade} x R$ ${item.preco.toFixed(2)}</p>
         <strong>R$ ${totalItem.toFixed(2)}</strong>
       </div>
-      <button class="delete-item" onclick="removerItem(${index})">🗑</button>
-    `;
 
-    cartItems.appendChild(div);
-  });
+      <button class="delete-item">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    `
 
-  totalsBox.innerHTML = `
-    <div class="line-item">
-      <span>Subtotal:</span>
-      <span>R$ ${subtotal.toFixed(2)}</span>
-    </div>
-    <div class="line-item total-row">
-      <span>TOTAL:</span>
-      <span>R$ ${subtotal.toFixed(2)}</span>
-    </div>
-  `;
+    div.querySelector("button").onclick = () => {
+
+      carrinho.splice(index,1)
+
+      if(carrinho.length === 0){
+        clienteCarrinho = null
+        clienteSelect.disabled = false
+      }
+
+      atualizarCarrinho()
+
+    }
+
+    cartItems.appendChild(div)
+
+  })
+
+  subtotalEl.textContent = `R$ ${subtotal.toFixed(2)}`
+  totalEl.textContent = `R$ ${subtotal.toFixed(2)}`
+
 }
 
-function removerItem(index) {
-  const item = carrinho[index];
-  const option = document.querySelector(`option[value="${item.id}"]`);
-  option.dataset.estoque = parseInt(option.dataset.estoque) + item.quantidade;
+/* FINALIZAR VENDA */
 
-  carrinho.splice(index, 1);
-  atualizarCarrinho();
-}
+finalizarBtn.addEventListener("click", () => {
+
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio")
+    return
+  }
+
+  const clienteNome = clienteSelect.selectedOptions[0].textContent
+
+  alert(`Venda realizada com sucesso para ${clienteNome}!`)
+
+  carrinho = []
+  clienteCarrinho = null
+
+  clienteSelect.disabled = false
+  clienteSelect.selectedIndex = 0
+
+  atualizarCarrinho()
+
+})

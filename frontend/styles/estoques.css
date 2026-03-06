@@ -1,0 +1,288 @@
+:root {
+  --bg-main: #dfdfdf;
+  --bg-sidebar: #6f8864;
+  --bg-sidebar-active: #607957;
+  --card-bg: #f5f5f5;
+  --border: #d8d8d8;
+  --title: #1f334a;
+  --text: #3b5673;
+  --accent: #6c8364;
+  --accent-soft: #a9cfb1;
+  --danger: #e02424;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-main);
+  color: var(--title);
+}
+
+.layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  background: var(--bg-sidebar);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+}
+
+.sidebar-top {
+  padding: 32px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid white;
+}
+
+.sidebar-top p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.menu-item {
+  text-decoration: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  font-size: 15px;
+  transition: background 0.2s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background: var(--bg-sidebar-active);
+}
+
+.settings-btn {
+  margin: auto 16px 0;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.05);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* CONTEÚDO */
+
+.content {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+/* CARDS */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* HEADER */
+
+.page-header {
+  padding: 18px 22px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 32px;
+}
+
+/* FILTROS */
+
+.filters {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* BOTÕES DOS FILTROS */
+
+.filter-btn {
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter-btn:hover {
+  background: #5f7758;
+}
+
+.filter-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* TABELA */
+
+.table-card {
+  padding: 16px;
+}
+
+.table-wrap {
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  overflow-x: auto;
+  background: #f2f2f2;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 16px;
+  border-bottom: 1px solid #d5d5d5;
+  font-size: 14px;
+}
+
+th {
+  font-weight: 600;
+}
+
+td {
+  color: #2f4a66;
+}
+
+/* STATUS */
+
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pill.status.normal {
+  background: #a8c7ac;
+  color: #4a6b54;
+}
+
+.pill.status.low {
+  background: #f8d892;
+  color: #986302;
+}
+
+.pill.status.critical {
+  background: #f7b0b0;
+  color: #9d1515;
+}
+
+/* BOTÃO ATUALIZAR */
+
+.update-btn {
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  padding: 0 14px;
+  background: #9dbe9f;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ESTATÍSTICAS */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  border-radius: 10px;
+  background: var(--card-bg);
+  padding: 16px;
+}
+
+.stat-card h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.stat-card .value {
+  margin: 0;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.stat-card .meta {
+  font-size: 13px;
+  color: #4a6179;
+}
+
+.stat-card.stock {
+  border-left-color: #6f8864;
+}
+
+.stat-card.low {
+  border-left-color: #f59e0b;
+}
+
+.stat-card.critical {
+  border-left-color: #dc2626;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Essência do Mar - Controle de Estoque</title>
+
+  <link rel="stylesheet" href="../styles/dashboard.css">
+  <link rel="stylesheet" href="../styles/produtos.css">
+    <link rel="stylesheet" href="../styles/estoques.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-row">
+          <img src="../images/essencia.png" class="brand-logo" alt="Logo Essência do Mar">
+          <div>
+            <h1>Essência do Mar</h1>
+            <p>Pontal do Paraná</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a class="menu-item" href="dashboard.html">
+          <span class="material-symbols-outlined">home</span>
+          Página Inicial
+        </a>
+
+        <a class="menu-item" href="produtos.html">
+          <span class="material-symbols-outlined">inventory_2</span>
+          Produtos
+        </a>
+
+        <a class="menu-item" href="categorias.html">
+          <span class="material-symbols-outlined">category</span>
+          Categorias
+        </a>
+
+        <a class="menu-item" href="clientes.html">
+          <span class="material-symbols-outlined">person_add</span>
+          Clientes
+        </a>
+
+        <a class="menu-item" href="vendas.html">
+          <span class="material-symbols-outlined">point_of_sale</span>
+          Vendas
+        </a>
+
+        <a class="menu-item active" href="#">
+          <span class="material-symbols-outlined">store</span>
+          Estoque
+        </a>
+
+        <a class="menu-item" href="relatorios.html">
+          <span class="material-symbols-outlined">description</span>
+          Relatórios
+        </a>
+      </nav>
+<button class="settings-btn" onclick="window.location.href='../index.html'">
+  <span class="material-symbols-outlined">logout</span>
+  Sair
+</button>
+    </aside>
+
+    <main class="content">
+      <section class="card page-header">
+        <h2>Controle de Estoque</h2>
+      </section>
+
+      <section class="card filters">
+        <button class="filter-btn active" data-filter="todos" type="button">
+          <span class="material-symbols-outlined">deployed_code</span>
+          Todos (<span id="totalCount">0</span>)
+        </button>
+
+        <button class="filter-btn active" data-filter="baixo" type="button">
+          <span class="material-symbols-outlined">warning</span>
+          Estoque Baixo (<span id="lowCount">0</span>)
+        </button>
+
+        <button class="filter-btn active" data-filter="critico" type="button">
+          <span class="material-symbols-outlined">warning</span>
+          Crítico (<span id="criticalCount">0</span>)
+        </button>
+      </section>
+
+      <section class="card table-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th>Tipo</th>
+                <th>Estoque</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card stock">
+          <h3>Produtos no Estoque</h3>
+          <p class="value" id="stockValue">0</p>
+          <p class="meta">total de produtos</p>
+        </article>
+
+        <article class="stat-card low">
+          <h3>Estoque Baixo</h3>
+          <p class="value" id="lowValue">0</p>
+          <p class="meta">entre 5 e 10 unidades</p>
+        </article>
+
+        <article class="stat-card critical">
+          <h3>Crítico</h3>
+          <p class="value" id="criticalValue">0</p>
+          <p class="meta">menos de 5 unidades</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/produtos.js"></script>
+</body>
+</html>
