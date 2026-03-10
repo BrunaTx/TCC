@@ -164,6 +164,15 @@ body {
   font-size: 15px;
 }
 
+/* Linhas alternadas da tabela */
+tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #95c08657; /* Versão transparente da cor de destaque */
+}
+
 .search-field input {
   width: min(460px, 100%);
   height: 44px;

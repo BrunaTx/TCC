@@ -81,11 +81,7 @@
       <div class="card sale-form-card">
         <label>Cliente *</label>
 <select id="clienteSelect">
-
-<option disabled selected>Selecione o cliente</option>
-
-<option value="1">Maria Silva</option>
-<option value="2">João Santos</option>
+  <option disabled selected>Selecione um cliente</option>
 
 </select>
 
@@ -94,27 +90,6 @@
         <label>Produto *</label>
         <select id="produtoSelect">
           <option disabled selected>Selecione um produto</option>
-
-          <option value="nori"
-                  data-preco="15.90"
-                  data-estoque="50"
-                  data-tipo="Unidade">
-            Alga Nori - R$ 15,90
-          </option>
-
-          <option value="tempero"
-                  data-preco="9.50"
-                  data-estoque="30"
-                  data-tipo="Unidade">
-            Tempero Marinho - R$ 9,50
-          </option>
-
-          <option value="oleo"
-                  data-preco="25.00"
-                  data-estoque="12"
-                  data-tipo="Unidade">
-            Óleo Essencial - R$ 25,00
-          </option>
         </select>
 
         <!-- INFORMAÇÕES -->
@@ -129,12 +104,12 @@
           </div>
           <div class="info-row">
             <span>Estoque disponível:</span>
-            <strong><span id="infoEstoque"></span> un</strong>
+            <strong><span id="infoEstoque"></span></strong>
           </div>
         </div>
 
         <label>Quantidade *</label>
-        <input type="number" id="quantidade" min="1" value="1">
+        <input type="number" id="quantidade" min="1" value="0.00">
 
         <button class="sale-add-btn">+ Adicionar à Venda</button>
 

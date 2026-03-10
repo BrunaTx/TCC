@@ -1,50 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A Essência do Mar - Login</title>
-  <link rel="stylesheet" href="styles/style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Essência do Mar - Login</title>
+<link rel="stylesheet" href="styles/style.css">
 </head>
-
 <body>
-  <main class="page">
-    <section class="card">
-   <img 
-              src="images/essencia.png" 
-              alt="Logo Essência do Mar" 
-              class="brand-icon"
-            />
-      <h1>Essência do Mar</h1>
-      <p class="subtitle">Loja de Produtos Naturais</p>
 
-      <form class="login-form" action="pages/dashboard.html">
-        
-        <label for="email">E-mail</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Digite seu e-mail"
-          required
-        />
+<main class="page">
+  <section class="card">
+    <img src="images/essencia.png" alt="Logo Essência do Mar" class="brand-icon"/>
+    <h1>Essência do Mar</h1>
+    <p class="subtitle">Loja de Produtos Naturais</p>
 
-        <label for="senha">Senha</label>
+    <form class="login-form" id="loginForm">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" placeholder="Digite seu e-mail" required>
 
-        <div class="password-field">
-          <input
-            id="senha"
-            type="password"
-            placeholder="Digite sua senha"
-            required
-          />
-          <span class="eye"></span>
-        </div>
+      <label for="senha">Senha</label>
+      <div class="password-field">
+        <input id="senha" type="password" placeholder="Digite sua senha" required>
+        <span class="eye"></span>
+      </div>
 
-        <button type="submit">Entrar</button>
-      </form>
+      <button type="submit">Entrar</button>
+    </form>
 
-      <p class="footer-location">Pontal do Paraná - PR</p>
-    </section>
-  </main>
+    <p class="footer-location">Pontal do Paraná - PR</p>
+  </section>
+</main>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value.trim();
+
+  try {
+    const resposta = await fetch("/api/auth/login", { // URL relativa
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario: email, senha: senha })
+    });
+
+    if (!resposta.ok) {
+      // Se o status não for 200, 201, etc.
+      const texto = await resposta.text();
+      throw new Error(texto || "Erro no login");
+    }
+
+    const dados = await resposta.json();
+
+    if (dados.sucesso) {
+      window.location.href = "pages/dashboard.html";
+    } else {
+      alert(dados.mensagem || "Usuário ou senha incorretos");
+    }
+
+  } catch (erro) {
+    console.error("Erro no login:", erro);
+    alert("Erro ao conectar com o servidor ou credenciais inválidas.");
+  }
+});
+</script>
+
 </body>
 </html>

@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   const modal = document.getElementById("clientModal");
   const openBtn = document.getElementById("openModalBtn");
   const closeBtn = document.getElementById("closeModalBtn");
@@ -13,20 +14,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editingRow = null;
 
-  // Simulação de compras
-  const clientesCompras = {
-    "12345678901": [
-      { total: 150, pagamento: "Cartão", produtos: [{ nome: "Salmão", quantidade: 2 }], data: "2026-03-03" },
-      { total: 70, pagamento: "Dinheiro", produtos: [{ nome: "Alga Nori", quantidade: 1 }], data: "2026-03-01" }
-    ],
-    "98765432100": [
-      { total: 200, pagamento: "PIX", produtos: [{ nome: "Atum", quantidade: 3 }], data: "2026-02-28" }
-    ]
-  };
+  // =========================
+  // FUNÇÃO PARA CARREGAR CLIENTES DO BACKEND
+  // =========================
+  async function carregarClientes() {
+    try {
+      const res = await fetch("/api/clientes");
+      if (!res.ok) throw new Error("Falha ao carregar clientes");
+      const clientes = await res.json();
 
-  // -----------------------
-  // MODAL CLIENTE
-  // -----------------------
+      tableBody.innerHTML = "";
+      clientes.forEach(c => {
+        const row = document.createElement("tr");
+        row.dataset.id = c.id_cliente;
+        row.innerHTML = `
+          <td>${c.nome}</td>
+          <td>${c.cpf}</td>
+          <td>${c.telefone}</td>
+          <td>${c.endereco}</td>
+          <td class="actions">
+            <button type="button" class="btn-info"><span class="material-symbols-outlined">list</span></button>
+            <button type="button" class="btn-edit"><span class="material-symbols-outlined">edit_note</span></button>
+            <button type="button" class="btn-danger"><span class="material-symbols-outlined">delete</span></button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+    } catch (err) {
+      console.error("Erro ao carregar clientes:", err);
+      alert("Erro ao conectar com o servidor.");
+    }
+  }
+
+  carregarClientes();
+
+  // =========================
+  // ABRIR MODAL
+  // =========================
   openBtn.addEventListener("click", () => {
     editingRow = null;
     form.reset();
@@ -42,53 +67,83 @@ document.addEventListener("DOMContentLoaded", () => {
   closeBtn.addEventListener("click", closeModal);
   cancelBtn.addEventListener("click", closeModal);
 
-  // -----------------------
-  // SUBMIT FORM CLIENTE
-  // -----------------------
-  form.addEventListener("submit", (e) => {
+  // =========================
+  // SALVAR OU EDITAR CLIENTE
+  // =========================
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const nome = form.nomeCliente.value.trim();
-    const cpf = form.cpfCliente.value.trim();
-    const telefone = form.telefoneCliente.value.trim();
-    const endereco = form.enderecoCliente.value.trim();
+    const dados = {
+      nome: form.nomeCliente.value.trim(),
+      cpf: form.cpfCliente.value.trim(),
+      telefone: form.telefoneCliente.value.trim(),
+      endereco: form.enderecoCliente.value.trim()
+    };
 
-    if (!/^\d{11}$/.test(cpf)) { alert("CPF inválido! Deve conter 11 números."); return; }
-    if (!/^\d{10,11}$/.test(telefone)) { alert("Telefone inválido! Deve conter 10 ou 11 números."); return; }
-
-    if (editingRow) {
-      editingRow.children[0].textContent = nome;
-      editingRow.children[1].textContent = cpf;
-      editingRow.children[2].textContent = telefone;
-      editingRow.children[3].textContent = endereco;
-    } else {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${nome}</td>
-        <td>${cpf}</td>
-        <td>${telefone}</td>
-        <td>${endereco}</td>
-        <td class="actions">
-          <button type="button" class="btn-info"><span class="material-symbols-outlined">list</span></button>
-          <button type="button" class="btn-edit"><span class="material-symbols-outlined">edit_note</span></button>
-          <button type="button" class="btn-danger"><span class="material-symbols-outlined">delete</span></button>
-        </td>
-      `;
-      tableBody.appendChild(row);
+    if (!dados.nome || !dados.cpf) {
+      alert("Nome e CPF são obrigatórios!");
+      return;
     }
 
-    closeModal();
+    if (!/^\d{11}$/.test(dados.cpf)) { alert("CPF inválido! Deve conter 11 números."); return; }
+    if (!/^\d{10,11}$/.test(dados.telefone)) { alert("Telefone inválido! Deve conter 10 ou 11 números."); return; }
+
+    try {
+      if (editingRow) {
+        // Editar cliente
+        const id = editingRow.dataset.id;
+        const res = await fetch(`/api/clientes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados)
+        });
+        if (!res.ok) throw new Error("Erro ao atualizar cliente");
+      } else {
+        // Criar cliente
+        const res = await fetch("/api/clientes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.erro || "Erro ao criar cliente");
+          return;
+        }
+      }
+
+      closeModal();
+      carregarClientes();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar cliente.");
+    }
   });
 
-  // -----------------------
-  // AÇÕES NA TABELA CLIENTES
-  // -----------------------
-  tableBody.addEventListener("click", (e) => {
+  // =========================
+  // AÇÕES NA TABELA
+  // =========================
+  tableBody.addEventListener("click", async (e) => {
     const row = e.target.closest("tr");
     if (!row) return;
 
-    if (e.target.closest(".btn-danger")) row.remove();
+    // EXCLUIR
+    if (e.target.closest(".btn-danger")) {
+      const id = row.dataset.id;
+      if (confirm("Deseja realmente excluir este cliente?")) {
+        try {
+          const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Erro ao excluir cliente");
+          row.remove();
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao excluir cliente.");
+        }
+      }
+      return;
+    }
 
+    // EDITAR
     if (e.target.closest(".btn-edit")) {
       editingRow = row;
       form.nomeCliente.value = row.children[0].textContent;
@@ -96,16 +151,28 @@ document.addEventListener("DOMContentLoaded", () => {
       form.telefoneCliente.value = row.children[2].textContent;
       form.enderecoCliente.value = row.children[3].textContent;
       modal.classList.remove("hidden");
+      return;
     }
 
+    // VER COMPRAS
     if (e.target.closest(".btn-info")) {
-      showPurchases(row);
-    }
+  const id_cliente = row.dataset.id; // use o id_cliente
+  try {
+    const res = await fetch(`/api/clientes/compras/${id_cliente}`);
+    if (!res.ok) throw new Error("Erro ao carregar compras");
+    const compras = Object.values(await res.json());
+    showPurchases(row, compras);
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao conectar com o servidor.");
+  }
+  return;
+}
   });
 
-  // -----------------------
-  // PESQUISA
-  // -----------------------
+  // =========================
+  // FILTRAR CLIENTES
+  // =========================
   searchInput.addEventListener("input", () => {
     const termo = searchInput.value.toLowerCase();
     tableBody.querySelectorAll("tr").forEach(linha => {
@@ -115,32 +182,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // -----------------------
-  // FUNÇÃO MOSTRAR COMPRAS
-  // -----------------------
-  function showPurchases(row) {
-    const cpfCliente = row.children[1].textContent;
-    const compras = clientesCompras[cpfCliente] || [];
+  // =========================
+  // MOSTRAR COMPRAS
+  // =========================
+  // =========================
+// MOSTRAR COMPRAS
+// =========================
+function showPurchases(row, compras) {
+  purchasesList.innerHTML = compras.length
+    ? compras.map((c, i) => {
+        // c já contém: data, total, pagamento, produtos[]
+        const pagamento = c.pagamento || "Desconhecido";
+        const produtosText = c.produtos.map(p => `${p.nome} x${p.quantidade}`).join(", ");
+        return `
+          <div style="border-bottom:1px solid #ccc; padding:6px;">
+            <strong>Compra ${i + 1}:</strong> Total R$ ${c.total.toFixed(2)} | Pagamento: ${pagamento} | Data: ${c.data}
+            <br>Produtos: ${produtosText}
+          </div>
+        `;
+      }).join("")
+    : `<div style="color:#666">Nenhuma compra registrada.</div>`;
 
-    purchasesList.innerHTML = compras.length
-      ? compras.map((c, i) => `<div style="border-bottom:1px solid #ccc; padding:6px;">
-          <strong>Compra ${i + 1}:</strong> Total R$ ${c.total} | Pagamento: ${c.pagamento} | Data: ${c.data}
-          <br>Produtos: ${c.produtos.map(p => `${p.nome} x${p.quantidade}`).join(", ")}
-        </div>`).join("")
-      : `<div style="color:#666">Nenhuma compra registrada.</div>`;
+  purchasesList.innerHTML += `<button id="generatePDFBtn" class="primary-btn" style="margin-top:10px;">Gerar PDF</button>`;
 
-    purchasesList.innerHTML += `<button id="generatePDFBtn" class="primary-btn" style="margin-top:10px;">Gerar PDF</button>`;
+  const btn = document.getElementById("generatePDFBtn");
+  btn.replaceWith(btn.cloneNode(true)); // remove listeners antigos
+  document.getElementById("generatePDFBtn").addEventListener("click", () => generatePDF(row, compras));
 
-    const btn = document.getElementById("generatePDFBtn");
-    btn.replaceWith(btn.cloneNode(true)); // remove listeners antigos
-    document.getElementById("generatePDFBtn").addEventListener("click", () => generatePDF(row, compras));
+  purchasesModal.classList.remove("hidden");
+}
 
-    purchasesModal.classList.remove("hidden");
-  }
-
-  // -----------------------
-  // FUNÇÃO GERAR PDF
-  // -----------------------
+// =========================
+// GERAR PDF
+// =========================
 function generatePDF(row, compras) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -150,123 +224,39 @@ function generatePDF(row, compras) {
   const clienteTelefone = row.children[2].textContent;
   const clienteEndereco = row.children[3].textContent;
 
- const primaryColor = [46, 125, 50];   // verde corporativo
- const secondaryColor = [139, 195, 74]; // verde claro destaque
- const textColor = [40, 40, 40];
-
   let y = 20;
-
-  // =============================
-  // TÍTULO PRINCIPAL
-  // =============================
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(...primaryColor);
   doc.text("RELATÓRIO DE COMPRAS", 105, y, { align: "center" });
-
-  doc.setDrawColor(...primaryColor);
-  doc.setLineWidth(0.8);
-  doc.line(20, y + 5, 190, y + 5);
-
-  y += 20;
-
-  // =============================
-  // DADOS DO CLIENTE
-  // =============================
-  doc.setFontSize(14);
-  doc.setTextColor(...primaryColor);
-  doc.text("DADOS DO CLIENTE", 20, y);
-
-  y += 10;
+  y += 15;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
-  doc.setTextColor(...textColor);
+  doc.text(`Nome: ${clienteNome}`, 20, y); y += 7;
+  doc.text(`CPF: ${clienteCPF}`, 20, y); y += 7;
+  doc.text(`Telefone: ${clienteTelefone}`, 20, y); y += 7;
+  doc.text(`Endereço: ${clienteEndereco}`, 20, y); y += 10;
 
-  doc.text(`Nome: ${clienteNome}`, 20, y);
-  y += 7;
-  doc.text(`CPF: ${clienteCPF}`, 20, y);
-  y += 7;
-  doc.text(`Telefone: ${clienteTelefone}`, 20, y);
-  y += 7;
-  doc.text(`Endereço: ${clienteEndereco}`, 20, y);
-
-  y += 15;
-
-  // =============================
-  // COMPRAS
-  // =============================
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(...primaryColor);
-  doc.text("HISTÓRICO DE COMPRAS", 20, y);
-
-  y += 10;
-
-  if (compras.length === 0) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.setTextColor(120);
-    doc.text("Nenhuma compra registrada.", 20, y);
-  } else {
-
-    compras.forEach((c, i) => {
-
-      if (y > 250) {
-        doc.addPage();
-        y = 20;
-      }
-
-      // Caixa da compra
-      doc.setFillColor(245, 248, 252);
-      doc.roundedRect(18, y - 6, 174, 28 + c.produtos.length * 6, 3, 3, "F");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(...primaryColor);
-      doc.text(`Compra ${i + 1}`, 22, y);
-
-      doc.setTextColor(...secondaryColor);
-      doc.text(`R$ ${c.total}`, 185, y, { align: "right" });
-
-      y += 8;
-
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...textColor);
-      doc.text(`Data: ${c.data}`, 22, y);
+  compras.forEach((c, i) => {
+    const pagamento = c.pagamento || "Desconhecido";
+    doc.text(`Compra ${i + 1} - Total: R$ ${c.total.toFixed(2)} - Pagamento: ${pagamento} - Data: ${c.data}`, 20, y);
+    y += 7;
+    c.produtos.forEach(p => {
+      doc.text(`• ${p.nome} x${p.quantidade}`, 25, y);
       y += 6;
-      doc.text(`Pagamento: ${c.pagamento}`, 22, y);
-
-      y += 8;
-
-      c.produtos.forEach(p => {
-        doc.text(`• ${p.nome} (Qtd: ${p.quantidade})`, 26, y);
-        y += 6;
-      });
-
-      y += 10;
     });
-  }
-
-  // =============================
-  // RODAPÉ
-  // =============================
-  const pages = doc.getNumberOfPages();
-  for (let i = 1; i <= pages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(10);
-    doc.setTextColor(150);
-    doc.text(`Página ${i} de ${pages}`, 105, 290, { align: "center" });
-  }
+    y += 5;
+  });
 
   doc.save(`Relatorio-${clienteNome}.pdf`);
 }
 
-  // -----------------------
+  // =========================
   // FECHAR MODAL COMPRAS
-  // -----------------------
+  // =========================
   closePurchasesBtn.addEventListener("click", () => {
     purchasesModal.classList.add("hidden");
     purchasesList.innerHTML = "";
   });
+
 });
