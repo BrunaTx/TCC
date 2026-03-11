@@ -1,3 +1,7 @@
+/* ============================= */
+/* BOTÕES */
+/* ============================= */
+
 .btn-list,
 .btn-edit,
 .btn-danger {
@@ -46,6 +50,7 @@
   border: 1px solid var(--danger);
 }
 
+
 /* ============================= */
 /* MODAL COMPRAS */
 /* ============================= */
@@ -61,29 +66,113 @@
   padding-right: 5px;
 }
 
-#purchasesList div {
+
+/* ============================= */
+/* CARD DA COMPRA */
+/* ============================= */
+
+.compra-card{
   background: #f8fbff;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  line-height: 1.5;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:12px;
+  font-size:14px;
+  line-height:1.5;
 }
 
-#generatePDFBtn {
-  margin-top: 15px;
-  width: 100%;
-  background-color: #6f8864;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.compra-header{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
 }
 
-#generatePDFBtn:hover {
-  background-color: #6f8864;
-  color: #6f8864;
+.data-compra{
+  font-size:13px;
+  color:#666;
+}
+
+
+/* ============================= */
+/* PRODUTOS */
+/* ============================= */
+
+.produtos-lista{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  margin-top:6px;
+}
+
+.produto-titulo{
+  min-width:70px;
+}
+
+.produtos{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.produto-item{
+  display:flex;
+  gap:4px;
+  white-space:nowrap;
+}
+
+
+/* ============================= */
+/* FOOTER DA COMPRA */
+/* ============================= */
+
+.compra-footer{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.total{
+  color:#1a7f37;
+  font-weight:600;
+}
+
+.pagamento{
+  color:#444;
+}
+
+.data{
+  font-size:13px;
+  color:#666;
+}
+
+
+/* ============================= */
+/* OUTROS */
+/* ============================= */
+
+.no-purchases{
+  text-align:center;
+  padding:20px;
+  color:#888;
+}
+
+.gerar-pdf-btn{
+  margin-top:15px;
+  width:100%;
+}
+
+#generatePDFBtn{
+  width:100%;
+  background-color:#6f8864;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+#generatePDFBtn:hover{
+  background-color:#5d7354;
 }

@@ -33,9 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="line-item">
       <span>Método de pagamento:</span>
       <select id="pagamentoSelect" style="width:50%;">
-        <option disabled selected>Selecione</option>
+       <option value="" disabled selected>Selecione</option>
         <option value="Cartão">Cartão</option>
         <option value="Dinheiro">Dinheiro</option>
+        <option value="Pix">Pix</option>
       </select>
     </div>
     <div id="dinheiroWrapper" style="display:none; margin-top:10px;">
@@ -60,7 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const clientesRes = await fetch("/api/vendas/clientes");
       const clientes = await clientesRes.json();
-      clienteSelect.innerHTML = `<option disabled selected>Selecione um cliente</option>`;
+     clienteSelect.innerHTML = `
+<option disabled selected>Selecione um cliente</option>
+<option value="null">Sem cliente</option>
+`;
       clientes.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c.id_cliente;
@@ -146,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   addBtn.addEventListener("click", () => {
     const cliente = clienteSelect.value;
     if (!cliente) return alert("Selecione um cliente");
+    
 
     const option = produtoSelect.selectedOptions[0];
     if (!option || !option.dataset.preco) return alert("Selecione um produto");
@@ -210,7 +215,12 @@ document.addEventListener("DOMContentLoaded", () => {
   finalizarBtn.addEventListener("click", async () => {
     if (!carrinho.length) return alert("Carrinho vazio");
     const metodoPagamento = pagamentoSelect.value;
-    if (!metodoPagamento) return alert("Selecione o método de pagamento");
+
+
+if (!metodoPagamento || metodoPagamento === "") {
+  alert("Selecione o método de pagamento para concluir a venda");
+  return;
+}
 
     const total = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
 
