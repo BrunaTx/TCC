@@ -59,8 +59,21 @@ app.use("/api/produtos", verificarLoginAPI, produtoRoutes);
 const clienteRoutes = require("./src/routes/clientes_routes");
 app.use("/api/clientes", clienteRoutes);
 
+// vendas
 const vendaRoutes = require("./src/routes/vendas_routes");
 app.use("/api/vendas", verificarLoginAPI, vendaRoutes);
+
+// estoques
+const estoqueRoutes = require("./src/routes/estoques_routes");
+app.use("/api/estoques", verificarLoginAPI, estoqueRoutes);
+
+// relatórios
+const relatorioRoutes = require("./src/routes/relatorios_routes");
+app.use("/api/relatorios", verificarLoginAPI, relatorioRoutes);
+
+// dashboard
+const dashboardRoutes = require("./src/routes/dashboard_routes");
+app.use("/api/dashboard", verificarLoginAPI, dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 

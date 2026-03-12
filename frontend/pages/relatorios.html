@@ -97,22 +97,28 @@ Exportar PDF
 
 <section class="card filters">
 
+
 <div class="field-group">
 <label>Tipo de Relatório</label>
-
 <select id="reportType">
-<option value="Diário">Diário</option>
+<option value="Totais">Vendas Totais</option>
+<option value="Diario">Diário</option>
 <option value="Semanal">Semanal</option>
 <option value="Mensal">Mensal</option>
+<option value="Anual">Anual</option>
 </select>
 </div>
 
-
-
 <div class="field-group">
-<label>Data</label>
-<input type="text" id="reportDate" value="05/03/2026">
+<label>Data inicial</label>
+<input type="date" id="dataInicio">
 </div>
+
+<div class="field-group fim">
+<label>Data final</label>
+<input type="date" id="dataFim">
+</div>
+
 
 </section>
 
@@ -150,8 +156,6 @@ Exportar PDF
 
 <div id="purchasesList">
 
-<div>Produto: Perfume Oceano | Quantidade: 2 | Valor: R$ 80</div>
-<div>Produto: Creme Marinho | Quantidade: 1 | Valor: R$ 35</div>
 
 </div>
 

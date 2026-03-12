@@ -1,76 +1,217 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const productsTableBody = document.getElementById("productsTableBody");
-  const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
 
-  const totalCount = document.getElementById("totalCount");
-  const lowCount = document.getElementById("lowCount");
-  const criticalCount = document.getElementById("criticalCount");
+const productsTableBody = document.getElementById("productsTableBody");
+const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
 
-  const stockValue = document.getElementById("stockValue");
-  const lowValue = document.getElementById("lowValue");
-  const criticalValue = document.getElementById("criticalValue");
+const totalCount = document.getElementById("totalCount");
+const lowCount = document.getElementById("lowCount");
+const criticalCount = document.getElementById("criticalCount");
 
-  const products = [
-    { nome: "Alga Nori", categoria: "Algas Marinhas", tipo: "Unidade", estoque: 50, unidade: "un" },
-    { nome: "Salmão Fresco", categoria: "Peixes Frescos", tipo: "Quilograma", estoque: 25, unidade: "kg" },
-    { nome: "Sardinha em Conserva", categoria: "Conservas", tipo: "Unidade", estoque: 100, unidade: "un" }
-  ];
+const modal = document.getElementById("estoqueModal");
+const produtoNome = document.getElementById("produtoNome");
+const novoEstoque = document.getElementById("novoEstoque");
 
-  const getStatus = (estoque) => {
-    if (estoque < 5) return { key: "critical", label: "Crítico" };
-    if (estoque <= 10) return { key: "low", label: "Baixo" };
-    return { key: "normal", label: "Normal" };
-  };
+const salvarEstoque = document.getElementById("salvarEstoque");
+const cancelarEstoque = document.getElementById("cancelarEstoque");
 
-  const renderRows = (filter = "todos") => {
-    productsTableBody.innerHTML = "";
+let products = [];
+let produtoSelecionado = null;
 
-    const visibleProducts = products.filter((product) => {
-      const status = getStatus(product.estoque).key;
-      if (filter === "baixo") return status === "low";
-      if (filter === "critico") return status === "critical";
-      return true;
-    });
+const getStatus = (estoque) => {
 
-    visibleProducts.forEach((product) => {
-      const status = getStatus(product.estoque);
+if (estoque < 5) return {key:"critical",label:"Crítico"};
+if (estoque <= 10) return {key:"low",label:"Baixo"};
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${product.nome}</td>
-        <td>${product.categoria}</td>
-        <td><span class="pill type">${product.tipo}</span></td>
-        <td>${product.estoque} ${product.unidade}</td>
-        <td><span class="pill status ${status.key}">${status.label}</span></td>
-        <td><button class="update-btn" type="button">Atualizar</button></td>
-      `;
+return {key:"normal",label:"Normal"};
 
-      productsTableBody.appendChild(row);
-    });
-  };
+};
 
-  const updateCounters = () => {
-    const low = products.filter((item) => item.estoque >= 5 && item.estoque <= 10).length;
-    const critical = products.filter((item) => item.estoque < 5).length;
-    const total = products.length;
 
-    totalCount.textContent = total;
-    lowCount.textContent = low;
-    criticalCount.textContent = critical;
 
-    stockValue.textContent = total;
-    lowValue.textContent = low;
-    criticalValue.textContent = critical;
-  };
+async function carregarProdutos(){
 
-  filterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      filterButtons.forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
-      renderRows(button.dataset.filter);
-    });
-  });
+try{
 
-  updateCounters();
-  renderRows();
+const response = await fetch("/api/estoques");
+const data = await response.json();
+
+products = data.map(produto => ({
+
+id:produto.id_produto,
+nome:produto.nome,
+categoria:produto.categoria,
+tipo:produto.tipo_venda === "kg" ? "Quilograma":"Unidade",
+estoque:Number(produto.estoque),
+unidade:produto.tipo_venda
+
+}));
+
+updateCounters();
+renderRows();
+
+}catch(err){
+
+console.error(err);
+
+}
+
+}
+
+
+
+const renderRows = (filter="todos")=>{
+
+productsTableBody.innerHTML="";
+
+const visibleProducts = products.filter(product=>{
+
+const status = getStatus(product.estoque).key;
+
+if(filter==="baixo") return status==="low";
+if(filter==="critico") return status==="critical";
+
+return true;
+
+});
+
+visibleProducts.forEach(product=>{
+
+const status = getStatus(product.estoque);
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+
+<td>${product.nome}</td>
+<td>${product.categoria}</td>
+<td>${product.tipo}</td>
+<td>${product.estoque} ${product.unidade}</td>
+<td>${status.label}</td>
+
+<td>
+
+<button class="update-btn" data-id="${product.id}">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+
+</td>
+
+`;
+
+productsTableBody.appendChild(row);
+
+});
+
+};
+
+
+
+const updateCounters = ()=>{
+
+const low = products.filter(item=>item.estoque>=5 && item.estoque<=10).length;
+const critical = products.filter(item=>item.estoque<5).length;
+const total = products.length;
+
+totalCount.textContent = total;
+lowCount.textContent = low;
+criticalCount.textContent = critical;
+
+document.getElementById("stockValue").textContent = total;
+document.getElementById("lowValue").textContent = low;
+document.getElementById("criticalValue").textContent = critical;
+
+};
+
+
+
+filterButtons.forEach(button=>{
+
+button.addEventListener("click",()=>{
+
+filterButtons.forEach(btn=>btn.classList.remove("active"));
+
+button.classList.add("active");
+
+renderRows(button.dataset.filter);
+
+});
+
+});
+
+
+
+productsTableBody.addEventListener("click",(e)=>{
+
+const btn = e.target.closest(".update-btn");
+
+if(!btn) return;
+
+const id = btn.dataset.id;
+
+const produto = products.find(p=>p.id == id);
+
+produtoSelecionado = produto;
+
+produtoNome.textContent = produto.nome;
+
+novoEstoque.value = produto.estoque;
+
+modal.classList.remove("hidden");
+
+});
+
+
+
+cancelarEstoque.addEventListener("click",()=>{
+
+modal.classList.add("hidden");
+
+});
+
+
+
+salvarEstoque.addEventListener("click", async()=>{
+
+const valor = parseFloat(novoEstoque.value);
+
+if(isNaN(valor)){
+
+alert("Digite um valor válido");
+return;
+
+}
+
+try{
+
+await fetch(`/api/estoques/${produtoSelecionado.id}`,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+estoque:valor
+})
+
+});
+
+modal.classList.add("hidden");
+
+carregarProdutos();
+
+}catch(err){
+
+console.error(err);
+alert("Erro ao atualizar estoque");
+
+}
+
+});
+
+
+
+carregarProdutos();
+
 });

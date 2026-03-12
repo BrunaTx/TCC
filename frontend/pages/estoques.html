@@ -98,7 +98,7 @@
                 <th>Tipo</th>
                 <th>Estoque</th>
                 <th>Status</th>
-                <th>Ação</th>
+                <th>Reposição</th>
               </tr>
             </thead>
             <tbody id="productsTableBody"></tbody>
@@ -128,6 +128,23 @@
     </main>
   </div>
 
-  <script src="../js/produtos.js"></script>
+  <div id="estoqueModal" class="modal hidden">
+  <div class="modal-card">
+
+    <h3>Atualizar Estoque</h3>
+
+    <p id="produtoNome"></p>
+
+    <input type="number" id="novoEstoque" min="0" step="0.01">
+
+    <div class="modal-actions">
+      <button id="cancelarEstoque">Cancelar</button>
+      <button id="salvarEstoque">Salvar</button>
+    </div>
+
+  </div>
+</div>
+
+  <script src="../js/estoques.js"></script>
 </body>
 </html>
