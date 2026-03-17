@@ -21,33 +21,37 @@ async function carregarRelatorio() {
     const dataFim = document.getElementById("dataFim").value;
 
     let url = `/api/relatorios?tipo=${tipo}`;
-    if (dataInicio && dataFim) {
-      url += `&dataInicio=${dataInicio}&dataFim=${dataFim}`;
-    }
+    if (dataInicio && dataFim) url += `&dataInicio=${dataInicio}&dataFim=${dataFim}`;
 
     const res = await fetch(url);
     const dados = await res.json();
 
     // =============================
-    // RESUMO BONITINHO
+    // RESUMO TOTAL
     // =============================
-    const totalVendas = Number(dados.totalVendas || 0);
+    document.getElementById("totalVendas").innerText = Number(dados.totalVendas || 0);
 
-    // converte itensVendidos para número seguro
-    let itensVendidosRaw = Number(dados.itensVendidos || 0);
-    let itensFormatado;
+    // =============================
+    // ITENS VENDIDOS SEPARADOS
+    // =============================
+    const itensUnidades = dados.detalhes
+      .filter(i => i.tipo_venda !== "kg")
+      .reduce((s, i) => s + Number(i.quantidade), 0);
 
-    if (itensVendidosRaw % 1 !== 0) {
-      // decimal, exibir duas casas
-      itensFormatado = itensVendidosRaw.toFixed(2).replace(".", ",");
-    } else {
-      // inteiro
-      itensFormatado = itensVendidosRaw.toString();
-    }
+    const itensQuilos = dados.detalhes
+      .filter(i => i.tipo_venda === "kg")
+      .reduce((s, i) => s + Number(i.quantidade), 0);
 
-    document.getElementById("totalVendas").innerText = totalVendas;
-    document.getElementById("itensVendidos").innerText = itensFormatado;
+    // formatação bonita: duas casas decimais para kg, inteiro para unidades
+    document.getElementById("itensVendidos").innerText =
+      itensUnidades % 1 !== 0 ? itensUnidades.toFixed(2).replace(".", ",") : itensUnidades;
 
+    document.getElementById("itensVendidosQuilos").innerText =
+      itensQuilos.toFixed(2).replace(".", ",");
+
+    // =============================
+    // FATURAMENTO
+    // =============================
     const faturamento = Number(dados.faturamento || 0).toFixed(2).replace(".", ",");
     document.getElementById("faturamento").innerText = "R$ " + faturamento;
 
@@ -60,17 +64,12 @@ async function carregarRelatorio() {
     dados.detalhes.forEach(item => {
       const div = document.createElement("div");
 
-      // total do item
       const totalItem = (item.preco * Number(item.quantidade)).toFixed(2).replace(".", ",");
-
-      // data formatada
       const dataVenda = new Date(item.data);
       const dataFormatada =
         dataVenda.toLocaleDateString("pt-BR") + " " + dataVenda.toLocaleTimeString("pt-BR");
 
-      let unidade;
-      let quantidade;
-
+      let unidade, quantidade;
       if (item.tipo_venda === "kg") {
         unidade = "kg";
         quantidade = Number(item.quantidade).toFixed(2).replace(".", ",");
@@ -79,8 +78,7 @@ async function carregarRelatorio() {
         quantidade = parseInt(item.quantidade);
       }
 
-      div.innerText =
-        `Produto: ${item.nome} | Quantidade: ${quantidade} ${unidade} | Valor: R$ ${totalItem} | Data: ${dataFormatada}`;
+      div.innerText = `Produto: ${item.nome} | Quantidade: ${quantidade} ${unidade} | Valor: R$ ${totalItem} | Data: ${dataFormatada}`;
       lista.appendChild(div);
     });
 

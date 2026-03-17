@@ -72,51 +72,57 @@ console.error(err);
 
 
 
-const renderRows = (filter="todos")=>{
+const renderRows = (filter="todos") => {
 
-productsTableBody.innerHTML="";
+  productsTableBody.innerHTML="";
 
-const visibleProducts = products.filter(product=>{
+  let visibleProducts = products.filter(product => {
+    const status = getStatus(product.estoque, product.unidade).key;
+    if(filter==="baixo") return status==="low";
+    if(filter==="critico") return status==="critical";
+    return true;
+  });
 
-const status = getStatus(product.estoque,product.unidade).key;
+  // ========================
+  // Ordenar por prioridade de estoque
+  // Crítico primeiro, depois baixo, depois normal
+  // Dentro de cada grupo, ordenar pelo estoque crescente
+  // ========================
+  visibleProducts.sort((a, b) => {
+    const statusOrder = { critical: 0, low: 1, normal: 2 };
+    const statusA = getStatus(a.estoque, a.unidade).key;
+    const statusB = getStatus(b.estoque, b.unidade).key;
 
-if(filter==="baixo") return status==="low";
-if(filter==="critico") return status==="critical";
+    if(statusOrder[statusA] !== statusOrder[statusB]) {
+      return statusOrder[statusA] - statusOrder[statusB];
+    }
 
-return true;
+    // mesmo status: ordenar pelo estoque crescente
+    return a.estoque - b.estoque;
+  });
 
-});
+  visibleProducts.forEach(product => {
+    const status = getStatus(product.estoque, product.unidade);
 
-visibleProducts.forEach(product=>{
+    const row = document.createElement("tr");
 
-const status = getStatus(product.estoque,product.unidade);
+    row.innerHTML=`
+      <td>${product.nome}</td>
+      <td>${product.categoria}</td>
+      <td>${product.tipo}</td>
+      <td>${product.estoque} ${product.unidade}</td>
+      <td>${status.label}</td>
+      <td>
+        <button class="update-btn" data-id="${product.id}">
+          <span class="material-symbols-outlined">refresh</span>
+        </button>
+      </td>
+    `;
 
-const row=document.createElement("tr");
-
-row.innerHTML=`
-
-<td>${product.nome}</td>
-<td>${product.categoria}</td>
-<td>${product.tipo}</td>
-<td>${product.estoque} ${product.unidade}</td>
-<td>${status.label}</td>
-
-<td>
-
-<button class="update-btn" data-id="${product.id}">
-<span class="material-symbols-outlined">refresh</span>
-</button>
-
-</td>
-
-`;
-
-productsTableBody.appendChild(row);
-
-});
+    productsTableBody.appendChild(row);
+  });
 
 };
-
 
 
 const updateCounters = ()=>{

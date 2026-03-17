@@ -120,6 +120,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // CARREGAR CLIENTES E PRODUTOS
   // ============================
 
+  valorPagoInput.addEventListener("input", () => {
+    const total = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
+    const pago = Number(valorPagoInput.value);
+
+    if (!total || isNaN(pago)) {
+      trocoEl.textContent = "";
+      return;
+    }
+
+    const troco = pago - total;
+
+    if (troco > 0) {
+      trocoEl.textContent = `Troco: R$ ${troco.toFixed(2)}`;
+    } else {
+      trocoEl.textContent = "";
+    }
+  });
+
   async function carregarSelects() {
 
     const clientesRes = await fetch("/api/vendas/clientes");
@@ -446,6 +464,15 @@ if (quantidade <= 0 || (quantidade + quantidadeNoCarrinho) > estoque)
       produtoSelect.selectedIndex = 0;
       quantidadeInput.value = "";
       productInfo.style.display = "none";
+
+      pagamentoSelect.selectedIndex = 0;
+      valorPagoInput.value = "";
+      trocoEl.textContent = "";
+      cartaoWrapper.style.display = "none";
+      parcelamentoWrapper.style.display = "none";
+      tipoCartao.selectedIndex = 0;
+      parcelasSelect.selectedIndex = 0;
+      valorCartao.textContent = "";
 
       atualizarCarrinho();
       carregarSelects();
