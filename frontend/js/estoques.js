@@ -14,13 +14,26 @@ const novoEstoque = document.getElementById("novoEstoque");
 const salvarEstoque = document.getElementById("salvarEstoque");
 const cancelarEstoque = document.getElementById("cancelarEstoque");
 
+
+
 let products = [];
 let produtoSelecionado = null;
 
-const getStatus = (estoque) => {
 
-if (estoque < 5) return {key:"critical",label:"Crítico"};
-if (estoque <= 10) return {key:"low",label:"Baixo"};
+// STATUS DO ESTOQUE
+const getStatus = (estoque, unidade) => {
+
+if(unidade === "kg"){
+
+if(estoque < 3) return {key:"critical",label:"Crítico"};
+if(estoque <= 5) return {key:"low",label:"Baixo"};
+
+}else{
+
+if(estoque < 5) return {key:"critical",label:"Crítico"};
+if(estoque <= 10) return {key:"low",label:"Baixo"};
+
+}
 
 return {key:"normal",label:"Normal"};
 
@@ -65,7 +78,7 @@ productsTableBody.innerHTML="";
 
 const visibleProducts = products.filter(product=>{
 
-const status = getStatus(product.estoque).key;
+const status = getStatus(product.estoque,product.unidade).key;
 
 if(filter==="baixo") return status==="low";
 if(filter==="critico") return status==="critical";
@@ -76,7 +89,7 @@ return true;
 
 visibleProducts.forEach(product=>{
 
-const status = getStatus(product.estoque);
+const status = getStatus(product.estoque,product.unidade);
 
 const row=document.createElement("tr");
 
@@ -108,17 +121,27 @@ productsTableBody.appendChild(row);
 
 const updateCounters = ()=>{
 
-const low = products.filter(item=>item.estoque>=5 && item.estoque<=10).length;
-const critical = products.filter(item=>item.estoque<5).length;
+const lowUn = products.filter(item=>item.unidade==="un" && item.estoque>=5 && item.estoque<=10).length;
+const criticalUn = products.filter(item=>item.unidade==="un" && item.estoque<5).length;
+
+const lowKg = products.filter(item=>item.unidade==="kg" && item.estoque>=3 && item.estoque<=5).length;
+const criticalKg = products.filter(item=>item.unidade==="kg" && item.estoque<3).length;
+
 const total = products.length;
 
 totalCount.textContent = total;
-lowCount.textContent = low;
-criticalCount.textContent = critical;
+lowCount.textContent = lowUn + lowKg;
+criticalCount.textContent = criticalUn + criticalKg;
 
+
+// CARDS
 document.getElementById("stockValue").textContent = total;
-document.getElementById("lowValue").textContent = low;
-document.getElementById("criticalValue").textContent = critical;
+
+document.getElementById("lowUnValue").textContent = lowUn;
+document.getElementById("lowKgValue").textContent = lowKg;
+
+document.getElementById("criticalUnValue").textContent = criticalUn;
+document.getElementById("criticalKgValue").textContent = criticalKg;
 
 };
 

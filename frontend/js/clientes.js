@@ -175,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = row.dataset.id;
 
-    // EXCLUIR
     if (e.target.closest(".btn-danger")) {
 
       if (confirm("Deseja excluir este cliente?")) {
@@ -199,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // EDITAR
     if (e.target.closest(".btn-edit")) {
 
       editingRow = row;
@@ -214,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // VER COMPRAS
     if (e.target.closest(".btn-info")) {
 
       try {
@@ -240,9 +237,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
-  // =========================
-  // FILTRO
-  // =========================
   searchInput.addEventListener("input", () => {
 
     const termo = searchInput.value.toLowerCase();
@@ -261,9 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
-  // =========================
-  // MOSTRAR COMPRAS
-  // =========================
   function showPurchases(row, compras) {
 
     purchasesList.innerHTML = "";
@@ -277,43 +268,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
       compras.forEach((c, i) => {
 
-       const pagamento = c.pagamento || "Não informado";
-const data = formatarDataBR(c.data);
+        const data = formatarDataBR(c.data);
 
-const produtosHTML = c.produtos.map(p => `
-  <div class="produto-item">
-    <span>${p.nome}</span>
-    <span>x${p.quantidade}</span>
-  </div>
-`).join("");
+        let pagamento = c.pagamento || "Não informado";
 
-purchasesList.innerHTML += `
-  <div class="compra-card">
+        if (c.pagamento === "Cartao") {
 
-    <div class="compra-header">
-      <strong>Compra #${i + 1}</strong>
-      <div class="data-compra">
-        <strong>Data:</strong> <span class="data">${data}</span>
-      </div>
-    </div>
+          if (c.tipo_cartao === "debito") {
 
-    <div class="produtos-lista">
-      <strong class="produto-titulo">Produto:</strong>
-      <div class="produtos">
-        ${produtosHTML}
-      </div>
-    </div>
+            pagamento = "Cartão - Débito";
 
-    <div class="compra-footer">
-      <span>
-        <strong>Pagamento:</strong>
-        <span class="total">R$ ${c.total.toFixed(2)}</span>
-        <b>(${pagamento})</b>
-      </span>
-    </div>
+          } else if (c.tipo_cartao === "credito") {
 
-  </div>
-`;
+            const parcelas = c.parcelas || 1;
+
+            if (parcelas > 1) {
+              pagamento = `Cartão - Crédito (${parcelas}x)`;
+            } else {
+              pagamento = "Cartão - Crédito à vista";
+            }
+
+          }
+
+        }
+
+        const produtosHTML = c.produtos.map(p => `
+          <div class="produto-item">
+            <span>${p.nome}</span>
+            <span>x${p.quantidade}</span>
+          </div>
+        `).join("");
+
+        purchasesList.innerHTML += `
+          <div class="compra-card">
+
+            <div class="compra-header">
+              <strong>Compra #${i + 1}</strong>
+              <div class="data-compra">
+                <strong>Data:</strong> <span class="data">${data}</span>
+              </div>
+            </div>
+
+            <div class="produtos-lista">
+              <strong class="produto-titulo">Produto:</strong>
+              <div class="produtos">
+                ${produtosHTML}
+              </div>
+            </div>
+
+            <div class="compra-footer">
+              <span>
+                <strong>Pagamento:</strong>
+                <span class="total">R$ ${c.total.toFixed(2)}</span>
+                <b>(${pagamento})</b>
+              </span>
+            </div>
+
+          </div>
+        `;
 
       });
 
@@ -332,9 +344,6 @@ purchasesList.innerHTML += `
     purchasesModal.classList.remove("hidden");
   }
 
-  // =========================
-  // GERAR PDF
-  // =========================
   function generatePDF(row, compras) {
 
     const { jsPDF } = window.jspdf;
@@ -362,7 +371,28 @@ purchasesList.innerHTML += `
     compras.forEach((c, i) => {
 
       const data = formatarDataBR(c.data);
-      const pagamento = c.pagamento || "Não informado";
+
+      let pagamento = c.pagamento || "Não informado";
+
+      if (c.pagamento === "Cartao") {
+
+        if (c.tipo_cartao === "debito") {
+
+          pagamento = "Cartão - Débito";
+
+        } else if (c.tipo_cartao === "credito") {
+
+          const parcelas = c.parcelas || 1;
+
+          if (parcelas > 1) {
+            pagamento = `Cartão - Crédito (${parcelas}x)`;
+          } else {
+            pagamento = "Cartão - Crédito à vista";
+          }
+
+        }
+
+      }
 
       doc.text(`Compra #${i + 1}`, 20, y);
       doc.text(`Data: ${data}`, 110, y);
@@ -391,9 +421,6 @@ purchasesList.innerHTML += `
     doc.save(`Historico-${nome}.pdf`);
   }
 
-  // =========================
-  // FECHAR MODAL
-  // =========================
   closePurchasesBtn.addEventListener("click", () => {
     purchasesModal.classList.add("hidden");
     purchasesList.innerHTML = "";

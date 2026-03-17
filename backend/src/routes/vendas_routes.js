@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
 
   try {
 
-    let { id_cliente, itens, pagamento } = req.body;
+    let { id_cliente, itens, pagamento, tipo_cartao, parcelas } = req.body;
 
     if (!itens || !itens.length || !pagamento) {
       return res.status(400).json({ erro: "Dados incompletos" });
@@ -65,11 +65,11 @@ router.post("/", async (req, res) => {
       id_cliente = null;
     }
 
-    const [result] = await db.query(
-      `INSERT INTO venda (id_cliente, data, pagamento)
-       VALUES (?, NOW(), ?)`,
-      [id_cliente, pagamento]
-    );
+   const [result] = await db.query(
+  `INSERT INTO venda (id_cliente, data, pagamento, tipo_cartao, parcelas)
+   VALUES (?, NOW(), ?, ?, ?)`,
+  [id_cliente, pagamento, tipo_cartao || null, parcelas || null]
+);
 
     const id_venda = result.insertId;
 

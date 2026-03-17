@@ -134,6 +134,8 @@ router.get("/compras/:id_cliente", async (req, res) => {
         v.id_venda,
         v.data,
         v.pagamento,
+        v.tipo_cartao,
+        v.parcelas,
         vi.quantidade,
         vi.preco,
         p.nome
@@ -153,6 +155,8 @@ router.get("/compras/:id_cliente", async (req, res) => {
         historico[v.id_venda] = {
           data: v.data,
           pagamento: v.pagamento,
+          tipo_cartao: v.tipo_cartao,
+          parcelas: v.parcelas,
           total: 0,
           produtos: []
         };
