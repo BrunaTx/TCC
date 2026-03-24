@@ -128,3 +128,17 @@ button {
   font-size: 0.85rem;
   color: #697a8f;
 }
+
+/* Estilo da imagem de fundo redonda no canto direito */
+.background-img {
+  position: fixed; /* fica fixa na tela, independente do scroll */
+  top: 78%;        /* centraliza verticalmente */
+ left: 71%;       /* posiciona no canto direito */
+  transform: translateY(-50%) rotate(-40deg);
+  width: 500px;    /* tamanho grande, você pode ajustar */
+  height: 500px;   /* mantém a proporção */
+  border-radius: 50%; /* deixa redonda */
+  object-fit: cover;  /* a imagem preenche o círculo sem deformar */
+  z-index: -1;     /* envia para trás, não atrapalha o card */
+  opacity: 0.70;    /* opcional: deixa semitransparente */
+}

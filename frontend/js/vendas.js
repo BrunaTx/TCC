@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   } else {
 
-    quantidadeInput.value = " ";
+    quantidadeInput.value = "";
     quantidadeInput.step = "1";
     quantidadeInput.min = "1";
 
@@ -462,7 +462,7 @@ if (quantidade <= 0 || (quantidade + quantidadeNoCarrinho) > estoque)
       clienteSelect.disabled = false;
       clienteSelect.selectedIndex = 0;
       produtoSelect.selectedIndex = 0;
-      quantidadeInput.value = "";
+      quantidadeInput.value = null;
       productInfo.style.display = "none";
 
       pagamentoSelect.selectedIndex = 0;

@@ -51,8 +51,11 @@ router.get("/produtos", async (req, res) => {
 // REGISTRAR VENDA
 // ==========================
 router.post("/", async (req, res) => {
+  
 
   try {
+
+    
 
     let { id_cliente, itens, pagamento, tipo_cartao, parcelas } = req.body;
 
@@ -72,6 +75,11 @@ router.post("/", async (req, res) => {
 );
 
     const id_venda = result.insertId;
+
+    res.json({
+  sucesso: true,
+  id_venda
+});
 
     const valoresItens = itens.map(i => [
       id_venda,
