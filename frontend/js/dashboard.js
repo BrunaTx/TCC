@@ -14,22 +14,26 @@ function updateDashboard(stats) {
 
   const faturamento = Number(stats.faturamento) || 0;
   const vendas = Number(stats.vendas) || 0;
-  const produtosVendidos = Number(stats.produtosVendidos) || 0;
+  const produtosVendidosUn = Number(stats.produtosVendidosUn) || 0;
+const produtosVendidosKg = Number(stats.produtosVendidosKg) || 0;
 
   const estoqueBaixoUn = Number(stats.estoqueBaixoUn) || 0;
   const estoqueBaixoKg = Number(stats.estoqueBaixoKg) || 0;
 
-  document.querySelector(".stats-grid .stat-card:nth-child(1) .value").textContent = `R$ ${faturamento.toFixed(2)}`;
-  document.querySelector(".stats-grid .stat-card:nth-child(1) .meta").textContent = `${vendas} vendas realizadas`;
+document.querySelector(".stats-grid .stat-card:nth-child(1) .value").textContent = `R$ ${faturamento.toFixed(2)}`;
+document.querySelector(".stats-grid .stat-card:nth-child(1) .meta").textContent = `${vendas} vendas realizadas`;
 
-  document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent = produtosVendidos;
-  document.querySelector(".stats-grid .stat-card:nth-child(2) .meta").textContent = "itens no total";
+document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent = produtosVendidosUn;
+document.querySelector(".stats-grid .stat-card:nth-child(2) .meta").textContent = "unidades no total";
 
-  document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent = estoqueBaixoUn;
-  document.querySelector(".stats-grid .stat-card:nth-child(3) .meta").textContent = "produtos abaixo de 10 unidades";
+document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent = produtosVendidosKg;
+document.querySelector(".stats-grid .stat-card:nth-child(3) .meta").textContent = "kg no total";
 
-  document.querySelector(".stats-grid .stat-card:nth-child(4) .value").textContent = estoqueBaixoKg;
-  document.querySelector(".stats-grid .stat-card:nth-child(4) .meta").textContent = "produtos abaixo de 5 kg";
+document.querySelector(".stats-grid .stat-card:nth-child(4) .value").textContent = estoqueBaixoUn;
+document.querySelector(".stats-grid .stat-card:nth-child(4) .meta").textContent = "produtos abaixo de 10 unidades";
+
+document.querySelector(".stats-grid .stat-card:nth-child(5) .value").textContent = estoqueBaixoKg;
+document.querySelector(".stats-grid .stat-card:nth-child(5) .meta").textContent = "produtos abaixo de 5 kg";
 
   const resumo = document.querySelector(".summary-card p");
 
@@ -37,7 +41,6 @@ function updateDashboard(stats) {
     ? "• Sem movimentações registradas até o momento."
     : `<p style="margin-top:10px; font-weight:bold; color: black">• Hoje foram registradas ${vendas} vendas, totalizando R$ ${faturamento.toFixed(2)}.</p>`;
 
-  // Produtos com estoque baixo
   if (stats.produtosEstoqueBaixo && stats.produtosEstoqueBaixo.length > 0) {
 
     html += `<p style="margin-top:10px; font-weight:bold; color: black">• Produtos com estoque baixo:</p>`;

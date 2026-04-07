@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ============================
-  // ELEMENTOS DO DOM
-  // ============================
   const clienteSelect = document.getElementById("clienteSelect");
   const produtoSelect = document.getElementById("produtoSelect");
   const quantidadeInput = document.getElementById("quantidade");
@@ -19,34 +16,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const addBtn = document.querySelector(".sale-add-btn");
   const finalizarBtn = document.querySelector(".finalize-btn");
 
-  // ============================
-  // VARIÁVEIS
-  // ============================
   let carrinho = [];
   let clienteCarrinho = null;
 
-  // ============================
-  // TAXAS DAS MAQUININAS
-  // ============================
   const taxas = {
     debito: 0.0137,
     credito: {
-      2: 0.0539,
-      3: 0.0612,
-      4: 0.0685,
-      5: 0.0757,
-      6: 0.0828,
-      7: 0.0899,
-      8: 0.0969,
-      9: 0.1038,
-      10: 0.1106,
-      11: 0.1174
+      2: 0.0539, 3: 0.0612, 4: 0.0685, 5: 0.0757,
+      6: 0.0828, 7: 0.0899, 8: 0.0969, 9: 0.1038,
+      10: 0.1106, 11: 0.1174
     }
   };
-
-  // ============================
-  // MÉTODO DE PAGAMENTO
-  // ============================
 
   const pagamentoWrapper = document.createElement("div");
   pagamentoWrapper.style.marginTop = "10px";
@@ -63,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <div id="cartaoWrapper" style="display:none;margin-top:10px;">
-
       <div class="line-item">
         <span>Tipo:</span>
         <select id="tipoCartao">
@@ -91,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <p id="valorCartao" style="margin-top:5px;font-weight:bold;"></p>
-
     </div>
 
     <div id="dinheiroWrapper" style="display:none;margin-top:10px;">
@@ -116,10 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const parcelamentoWrapper = document.getElementById("parcelamentoWrapper");
   const valorCartao = document.getElementById("valorCartao");
 
-  // ============================
-  // CARREGAR CLIENTES E PRODUTOS
-  // ============================
-
   valorPagoInput.addEventListener("input", () => {
     const total = carrinho.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
     const pago = Number(valorPagoInput.value);
@@ -130,23 +104,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const troco = pago - total;
-
-    if (troco > 0) {
-      trocoEl.textContent = `Troco: R$ ${troco.toFixed(2)}`;
-    } else {
-      trocoEl.textContent = "";
-    }
+    trocoEl.textContent = troco > 0 ? `Troco: R$ ${troco.toFixed(2)}` : "";
   });
 
   async function carregarSelects() {
 
-    const clientesRes = await fetch("/api/vendas/clientes");
-    const clientes = await clientesRes.json();
+    const clientes = await (await fetch("/api/vendas/clientes")).json();
 
     clienteSelect.innerHTML = `
 <option disabled selected>Selecione um cliente</option>
-<option value="null">Sem cliente</option>
-`;
+<option value="null">Sem cliente</option>`;
 
     clientes.forEach(c => {
       const opt = document.createElement("option");
@@ -155,66 +122,58 @@ document.addEventListener("DOMContentLoaded", () => {
       clienteSelect.appendChild(opt);
     });
 
-    const produtosRes = await fetch("/api/vendas/produtos");
-    const produtos = await produtosRes.json();
+    const produtos = await (await fetch("/api/vendas/produtos")).json();
 
     produtoSelect.innerHTML = `<option disabled selected>Selecione um produto</option>`;
 
     produtos.forEach(p => {
-
       const opt = document.createElement("option");
-
       opt.value = p.id_produto;
       opt.dataset.preco = p.preco;
       opt.dataset.estoque = p.estoque;
       opt.dataset.tipo = p.tipo_venda;
-
       opt.textContent = `${p.nome} - R$ ${Number(p.preco).toFixed(2)}`;
-
       produtoSelect.appendChild(opt);
-
     });
 
+    $('#clienteSelect').trigger('change');
+    $('#produtoSelect').trigger('change');
   }
 
   carregarSelects();
 
-  // ============================
-  // MOSTRAR PRODUTO
-  // ============================
+  $(document).ready(function() {
+    $('#clienteSelect').select2({ placeholder: "Selecione um cliente", width: '100%' });
+    $('#produtoSelect').select2({ placeholder: "Selecione um produto", width: '100%' });
+  });
 
-  produtoSelect.addEventListener("change", () => {
+  // 🔥 CORREÇÃO AQUI (SELECT2)
+  $('#produtoSelect').on('change', function () {
 
-  const option = produtoSelect.selectedOptions[0];
+    const option = produtoSelect.selectedOptions[0];
 
-  const preco = Number(option.dataset.preco);
-  const estoque = Number(option.dataset.estoque);
-  const tipo = option.dataset.tipo;
+    const preco = Number(option.dataset.preco);
+    const estoque = Number(option.dataset.estoque);
+    const tipo = option.dataset.tipo;
 
-  infoTipo.textContent = tipo;
-  infoPreco.textContent = `R$ ${preco.toFixed(2)}`;
-  infoEstoque.textContent = `${estoque} ${tipo === "kg" ? "kg" : "un"}`;
+    infoTipo.textContent = tipo;
+    infoPreco.textContent = `R$ ${preco.toFixed(2)}`;
+    infoEstoque.textContent = `${estoque} ${tipo === "kg" ? "kg" : "un"}`;
 
-  // ajuste do campo quantidade conforme tipo
-  if (tipo === "kg") {
+    if (tipo === "kg") {
+      quantidadeInput.value = "0.00";
+      quantidadeInput.step = "0.01";
+      quantidadeInput.min = "0.01";
+    } else {
+      quantidadeInput.value = "";
+      quantidadeInput.step = "1";
+      quantidadeInput.min = "1";
+    }
 
-    quantidadeInput.value = "0.00";
-    quantidadeInput.step = "0.01";
-    quantidadeInput.min = "0.01";
+    quantidadeInput.max = estoque;
+    productInfo.style.display = "block";
+  });
 
-  } else {
-
-    quantidadeInput.value = "";
-    quantidadeInput.step = "1";
-    quantidadeInput.min = "1";
-
-  }
-
-  quantidadeInput.max = estoque;
-
-  productInfo.style.display = "block";
-
-});
 
   // ============================
   // MOSTRAR CAMPOS DE PAGAMENTO

@@ -14,12 +14,6 @@ router.get("/", async (req, res) => {
       WHERE DATE(v.data) = CURDATE()
     `);
 
-    const [produtosVendidosRes] = await db.query(`
-      SELECT SUM(vi.quantidade) AS produtosVendidos
-      FROM venda v
-      JOIN venda_item vi ON v.id_venda = vi.id_venda
-      WHERE DATE(v.data) = CURDATE()
-    `);
 
     const [estoqueBaixoUnRes] = await db.query(`
       SELECT COUNT(*) AS estoqueBaixoUn
@@ -92,11 +86,29 @@ router.get("/", async (req, res) => {
       ORDER BY total ASC
       LIMIT 1
     `);
+    const [produtosVendidosUnRes] = await db.query(`
+  SELECT SUM(vi.quantidade) AS total
+  FROM venda v
+  JOIN venda_item vi ON v.id_venda = vi.id_venda
+  JOIN produto p ON vi.id_produto = p.id_produto
+  WHERE DATE(v.data) = CURDATE()
+  AND p.tipo_venda = 'un'
+`);
+
+const [produtosVendidosKgRes] = await db.query(`
+  SELECT SUM(vi.quantidade) AS total
+  FROM venda v
+  JOIN venda_item vi ON v.id_venda = vi.id_venda
+  JOIN produto p ON vi.id_produto = p.id_produto
+  WHERE DATE(v.data) = CURDATE()
+  AND p.tipo_venda = 'kg'
+`);
 
     res.json({
       faturamento: faturamentoRes[0].faturamento || 0,
       vendas: faturamentoRes[0].vendas || 0,
-      produtosVendidos: produtosVendidosRes[0].produtosVendidos || 0,
+      produtosVendidosUn: produtosVendidosUnRes[0].total || 0,
+produtosVendidosKg: produtosVendidosKgRes[0].total || 0,
 
       estoqueBaixoUn: estoqueBaixoUnRes[0].estoqueBaixoUn || 0,
       estoqueBaixoKg: estoqueBaixoKgRes[0].estoqueBaixoKg || 0,
@@ -105,6 +117,8 @@ router.get("/", async (req, res) => {
 
       maisVendidoUn: maisVendidoUnRes[0] || null,
       maisVendidoKg: maisVendidoKgRes[0] || null,
+
+      
 
       menosVendidoUn: menosVendidoUnRes[0] || null,
       menosVendidoKg: menosVendidoKgRes[0] || null
