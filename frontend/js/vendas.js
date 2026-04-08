@@ -275,24 +275,38 @@ document.addEventListener("DOMContentLoaded", () => {
     let pagamentos = [];
 
     for (let id of ids) {
-        let metodoNome = document.getElementById(`pagamentoSelect${id}`).value;
-        if (!metodoNome) return alert(`Selecione o método de pagamento ${id}`);
+        let metodoOriginal = document.getElementById(`pagamentoSelect${id}`).value;
+        if (!metodoOriginal) return alert(`Selecione o método de pagamento ${id}`);
 
-        // NOVA LÓGICA: Se for cartão, muda o nome para Débito ou Crédito
-        if (metodoNome === "Cartao") {
-            const tipo = document.getElementById(`tipoCartao${id}`).value;
-            metodoNome = tipo === "debito" ? "Débito" : "Crédito";
-        }
+        let metodoNomeExibicao = metodoOriginal;
+        const tipoCartao = document.getElementById(`tipoCartao${id}`).value;
+        const parcelas = Number(document.getElementById(`parcelasSelect${id}`).value);
 
-        const valor = id === 1 
+        const valorBase = id === 1 
             ? (qtdMetodos.value === "2" ? parseFloat(valorMetodo1.value) : totalVenda)
             : parseFloat(valorMetodo2.value);
 
+        if (isNaN(valorBase)) return alert(`Informe o valor para o Método ${id}`);
+
+        // Cálculo de taxa para salvar o valor exato que o cliente vai pagar no cartão
+        let valorFinalComTaxa = valorBase;
+        if (metodoOriginal === "Cartao") {
+            if (tipoCartao === "debito") {
+                metodoNomeExibicao = "Débito";
+            } else {
+                const taxa = taxas.credito[parcelas] || 0;
+                valorFinalComTaxa = valorBase * (1 + taxa);
+                const valorParcela = valorFinalComTaxa / parcelas;
+                // Formatação: Crédito 2x de R$ 20.00
+                metodoNomeExibicao = `Crédito ${parcelas}x de R$ ${valorParcela.toFixed(2)}`;
+            }
+        }
+
         pagamentos.push({
-            metodo: metodoNome,
-            valor: valor,
-            tipo_cartao: document.getElementById(`tipoCartao${id}`).value,
-            parcelas: document.getElementById(`parcelasSelect${id}`).value
+            metodo: metodoNomeExibicao,
+            valor: valorFinalComTaxa.toFixed(2), // Garante o 40.00
+            tipo_cartao: tipoCartao,
+            parcelas: parcelas
         });
     }
 
@@ -302,7 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_cliente: clienteSelect.value,
-          itens: carrinho.map(i => ({ id_produto: i.id_produto, quantidade: i.quantidade, preco: i.preco })),
+          itens: carrinho.map(i => ({ 
+            id_produto: i.id_produto, 
+            quantidade: i.quantidade, 
+            preco: i.preco.toFixed(2) 
+          })),
           pagamentos: pagamentos
         })
       });
