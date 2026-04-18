@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("productForm");
   const tableBody = document.getElementById("productsTableBody");
   const searchInput = document.getElementById("searchInput");
+  const codigoBarrasInput = document.getElementById("codigoBarras");
 
   const tipoSelect = form.tipoVenda;
   const estoqueInput = document.getElementById("estoqueInput");
@@ -78,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     produtos.forEach(prod => {
       const row = document.createElement("tr");
       row.dataset.id = prod.id_produto;
+      row.dataset.codigo_barras = prod.codigo_barras || "";
       row.dataset.descricao = prod.descricao || "";
       row.dataset.id_categoria = prod.id_categoria;
       row.innerHTML = `
@@ -85,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${prod.categoria}</td>
         <td><span class="tag">${prod.tipo_venda === "kg" ? "Quilograma" : "Unidade"}</span></td>
         <td>R$ ${parseFloat(prod.preco).toFixed(2)}</td>
-        <td>${prod.tipo_venda === "kg" ? parseFloat(prod.estoque).toFixed(2) : prod.estoque} ${prod.tipo_venda === "kg" ? "kg" : "un"}</td>
+        <td>${prod.tipo_venda === "kg" ? parseFloat(prod.estoque).toFixed(3) : prod.estoque} ${prod.tipo_venda === "kg" ? "kg" : "un"}</td>
+        <td>${prod.codigo_barras || "-"}</td>
         <td class="actions">
           <button type="button" class="btn-info">
             <span class="material-symbols-outlined">info</span>
@@ -105,6 +108,25 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarProdutos();
 
   // =========================
+  // Lógica de Detecção de Balança
+  // =========================
+  codigoBarrasInput.addEventListener("input", (e) => {
+    const codigo = e.target.value.trim();
+
+    // Se começar com 2 e tiver 13 dígitos, é etiqueta de balança
+    if (codigo.startsWith("2") && codigo.length === 13) {
+      // Muda automaticamente para Quilograma
+      tipoSelect.value = "kg";
+      tipoSelect.dispatchEvent(new Event("change"));
+      
+      // Opcional: Você pode dar um feedback visual que é um produto de balança
+      codigoBarrasInput.style.borderColor = "#2ecc71"; 
+    } else {
+      codigoBarrasInput.style.borderColor = "";
+    }
+  });
+
+  // =========================
   // Abrir modal
   // =========================
   openBtn.addEventListener("click", () => {
@@ -118,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.add("hidden");
     form.reset();
     editingRow = null;
+    codigoBarrasInput.style.borderColor = "";
   }
 
   closeBtn.addEventListener("click", closeModal);
@@ -128,8 +151,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   tipoSelect.addEventListener("change", () => {
     if (tipoSelect.value === "kg") {
-      estoqueInput.step = "0.01";
-      if (!editingRow) estoqueInput.value = "0.00";
+      estoqueInput.step = "0.001"; // 3 casas para precisão de gramas
+      if (!editingRow) estoqueInput.value = "0.000";
     } else {
       estoqueInput.step = "1";
       if (!editingRow) estoqueInput.value = "0";
@@ -150,13 +173,23 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    let codigoFinal = codigoBarrasInput.value.trim();
+
+    // TRATAMENTO PARA BALANÇA:
+    // Se for um código de 13 dígitos começando com 2, salvamos apenas os 7 primeiros
+    // para que o sistema reconheça o produto independente do preço/peso na etiqueta
+    if (codigoFinal.startsWith("2") && codigoFinal.length === 13) {
+      codigoFinal = codigoFinal.substring(0, 7);
+    }
+
     const dados = {
       nome: form.nomeProduto.value.trim(),
+      codigo_barras: codigoFinal,
       id_categoria: parseInt(categoriaSelect.value),
       tipo_venda: form.tipoVenda.value,
       preco: parseFloat(form.preco.value).toFixed(2),
       estoque: tipoSelect.value === "kg"
-        ? parseFloat(estoqueInput.value).toFixed(2)
+        ? parseFloat(estoqueInput.value).toFixed(3)
         : parseInt(estoqueInput.value),
       descricao: descricaoInput.value.trim()
     };
@@ -187,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar produto. Veja o console.");
+      alert("Erro ao salvar produto. Verifique se o código de barras já existe.");
     }
   });
 
@@ -205,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       // Excluir
       if (btn.classList.contains("btn-danger")) {
+        if(!confirm("Deseja realmente excluir este produto?")) return;
         await fetchJson(`/api/produtos/${id}`, { method: "DELETE" });
         carregarProdutos();
         return;
@@ -214,11 +248,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btn.classList.contains("btn-edit")) {
         editingRow = row;
         form.nomeProduto.value = row.children[0].textContent;
+        codigoBarrasInput.value = row.dataset.codigo_barras || "";
         form.categoria.value = row.dataset.id_categoria;
         form.tipoVenda.value = row.children[2].textContent.trim() === "Quilograma" ? "kg" : "un";
         form.preco.value = row.children[3].textContent.replace("R$ ", "");
+        
+        // Ajuste para pegar valor numérico limpo do estoque
         form.estoque.value = row.children[4].textContent.split(" ")[0];
+        
         descricaoInput.value = row.dataset.descricao || "";
+        
         tipoSelect.dispatchEvent(new Event("change"));
         modal.classList.remove("hidden");
         return;
@@ -243,7 +282,15 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("input", () => {
     const termo = searchInput.value.toLowerCase();
     tableBody.querySelectorAll("tr").forEach(linha => {
-      linha.style.display = linha.innerText.toLowerCase().includes(termo) ? "" : "none";
+      // Busca no texto da linha ou no atributo do código de barras
+      const textoLinha = linha.innerText.toLowerCase();
+      const codigoBarras = (linha.dataset.codigo_barras || "").toLowerCase();
+      
+      if (textoLinha.includes(termo) || codigoBarras.includes(termo)) {
+        linha.style.display = "";
+      } else {
+        linha.style.display = "none";
+      }
     });
   });
 

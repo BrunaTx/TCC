@@ -1,155 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Essência do Mar - Vendas</title>
-
-  <link rel="stylesheet" href="../styles/dashboard.css" />
-  <link rel="stylesheet" href="../styles/vendas.css" />
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Essência do Mar - Vendas</title>
+    <link rel="stylesheet" href="../styles/dashboard.css" />
+    <link rel="stylesheet" href="../styles/vendas.css" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 </head>
-
-
 <body>
 <div class="layout">
-
-  <aside class="sidebar">
-      <div class="sidebar-top">
-        <div class="brand-row">
-          <img src="../images/essencia.png" class="brand-logo">
-          <div>
-            <h1>Essência do Mar</h1>
-            <p>Pontal do Paraná</p>
-          </div>
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <div class="brand-row">
+                <img src="../images/essencia.png" class="brand-logo">
+                <div>
+                    <h1>Essência do Mar</h1>
+                    <p>Pontal do Paraná</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <nav class="menu">
-        <a class="menu-item" href="dashboard.html">
-          <span class="material-symbols-outlined">home</span>
-          Página Inicial
-        </a>
-
-        <a class="menu-item" href="produtos.html">
-          <span class="material-symbols-outlined">inventory_2</span>
-          Produtos
-        </a>
-
-         <a class="menu-item" href="categorias.html">
-          <span class="material-symbols-outlined">category</span>
-          Categorias
-        </a>
-
-        <a class="menu-item" href="clientes.html">
-          <span class="material-symbols-outlined">person_add</span>
-          Clientes
-        </a>
-
-        <a class="menu-item active" href="#">
-          <span class="material-symbols-outlined">point_of_sale</span>
-          Vendas
-        </a>
-
-        <a class="menu-item" href="estoques.html">
-          <span class="material-symbols-outlined">store</span>
-          Estoque
-        </a>
-
-        <a class="menu-item" href="relatorios.html">
-          <span class="material-symbols-outlined">description</span>
-          Relatórios
-        </a>
-      </nav>
-
-      <button class="settings-btn" onclick="window.location.href='/api/auth/logout'">
-  <span class="material-symbols-outlined">logout</span>
-  Sair
-</button>
+        <nav class="menu">
+            <a class="menu-item" href="dashboard.html"><span class="material-symbols-outlined">home</span>Página Inicial</a>
+            <a class="menu-item" href="produtos.html"><span class="material-symbols-outlined">inventory_2</span>Produtos</a>
+            <a class="menu-item" href="categorias.html"><span class="material-symbols-outlined">category</span>Categorias</a>
+            <a class="menu-item" href="clientes.html"><span class="material-symbols-outlined">person_add</span>Clientes</a>
+            <a class="menu-item active" href="#"><span class="material-symbols-outlined">point_of_sale</span>Vendas</a>
+            <a class="menu-item" href="estoques.html"><span class="material-symbols-outlined">store</span>Estoque</a>
+            <a class="menu-item" href="relatorios.html"><span class="material-symbols-outlined">description</span>Relatórios</a>
+        </nav>
+        <button class="settings-btn" onclick="window.location.href='/api/auth/logout'">
+            <span class="material-symbols-outlined">logout</span> Sair
+        </button>
     </aside>
 
-  <!-- CONTEÚDO -->
-  <main class="content-area">
+    <main class="content-area">
+        <header class="top-card">
+            <h2>Realizar Venda</h2>
+            <p>Selecione cliente, produtos e finalize.</p>
+        </header>
 
-    <header class="top-card">
-      <h2>Realizar Venda</h2>
-      <p>Selecione cliente, produtos e finalize.</p>
-    </header>
+        <section class="sales-workspace">
+            <div class="card sale-form-card">
+                <label>Cliente *</label>
+                <select id="clienteSelect">
+                    <option disabled selected value="">Selecione um cliente</option>
+                </select>
 
-    <section class="sales-workspace">
+                <label>Código de Barras</label>
+                <input type="text" id="codigoBarrasVenda" placeholder="Leia o código de barras" autocomplete="off">
 
-      <!-- FORM -->
-      <div class="card sale-form-card">
-        <label>Cliente *</label>
-<select id="clienteSelect">
-  <option disabled selected>Selecione um cliente</option>
+                <h3>Adicionar Produto manualmente</h3>
+                <label>Produto *</label>
+                <select id="produtoSelect">
+                    <option disabled selected value="">Selecione um produto</option>
+                </select>
 
-</select>
+                <div class="product-info" id="productInfo" style="display:none;">
+                    <div class="info-row"><span>Tipo:</span> <strong id="infoTipo"></strong></div>
+                    <div class="info-row"><span>Preço:</span> <strong id="infoPreco"></strong></div>
+                    <div class="info-row"><span>Estoque:</span> <strong id="infoEstoque"></strong></div>
+                </div>
 
-        <h3>Adicionar Produto</h3>
+                <label>Quantidade *</label>
+                <input type="number" id="quantidade" min="0.001" step="0.001">
+                <button class="sale-add-btn">+ Adicionar à Venda</button>
+            </div>
 
-        <label>Produto *</label>
-        <select id="produtoSelect">
-          <option disabled selected>Selecione um produto</option>
-        </select>
-
-        <!-- INFORMAÇÕES -->
-        <div class="product-info" id="productInfo">
-          <div class="info-row">
-            <span>Tipo de venda:</span>
-            <strong id="infoTipo"></strong>
-          </div>
-          <div class="info-row">
-            <span>Preço unitário:</span>
-            <strong id="infoPreco"></strong>
-          </div>
-          <div class="info-row">
-            <span>Estoque disponível:</span>
-            <strong><span id="infoEstoque"></span></strong>
-          </div>
-        </div>
-
-        <label>Quantidade *</label>
-        <input type="number" id="quantidade" min="1" value="">
-
-        <button class="sale-add-btn">+ Adicionar à Venda</button>
-
-      </div>
-
-      <!-- CARRINHO -->
-      <div class="card cart-card">
-        <h3>Carrinho</h3>
-
-        <div id="cartItems"></div>
-
-        <div class="totals-box" id="totalsBox">
-          <div class="line-item">
-            <span>Subtotal:</span>
-            <span>R$ 0.00</span>
-          </div>
-          <div class="line-item total-row">
-            <span>TOTAL:</span>
-            <span>R$ 0.00</span>
-          </div>
-        </div>
-
-        <button class="finalize-btn">Finalizar Venda</button>
-      </div>
-
-    </section>
-  </main>
+            <div class="card cart-card">
+                <h3>Carrinho</h3>
+                <div id="cartItems"></div>
+                <div class="totals-box" id="totalsBox">
+                    <div class="line-item"><span>Subtotal:</span> <span id="subtotalDisplay">R$ 0.00</span></div>
+                    <div class="line-item total-row"><span>TOTAL:</span> <span id="totalDisplay">R$ 0.00</span></div>
+                </div>
+                <button class="finalize-btn">Finalizar Venda</button>
+            </div>
+        </section>
+    </main>
 </div>
 
-<<!-- JQUERY -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- SELECT2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- SEU JS -->
 <script src="../js/vendas.js"></script>
 </body>
 </html>
