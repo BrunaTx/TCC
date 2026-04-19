@@ -47,7 +47,7 @@ async function carregarRelatorio() {
       itensUnidades % 1 !== 0 ? itensUnidades.toFixed(2).replace(".", ",") : itensUnidades;
 
     document.getElementById("itensVendidosQuilos").innerText =
-      itensQuilos.toFixed(2).replace(".", ",");
+      itensQuilos.toFixed(3).replace(".", ",");
 
     // =============================
     // FATURAMENTO
@@ -72,7 +72,7 @@ async function carregarRelatorio() {
       let unidade, quantidade;
       if (item.tipo_venda === "kg") {
         unidade = "kg";
-        quantidade = Number(item.quantidade).toFixed(2).replace(".", ",");
+        quantidade = Number(item.quantidade).toFixed(3).replace(".", ",");
       } else {
         unidade = "un";
         quantidade = parseInt(item.quantidade);

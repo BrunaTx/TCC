@@ -15,11 +15,17 @@ router.get("/clientes", async (req, res) => {
 });
 
 // ==========================
-// LISTAR PRODUTOS
+// LISTAR PRODUTOS (SOMENTE ATIVOS)
 // ==========================
 router.get("/produtos", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT id_produto, nome, preco, estoque, tipo_venda FROM produto ORDER BY nome");
+    // Adicionado "WHERE ativo = TRUE" para que produtos excluídos não apareçam na lista de venda
+    const [rows] = await db.query(`
+      SELECT id_produto, nome, preco, estoque, tipo_venda 
+      FROM produto 
+      WHERE ativo = TRUE 
+      ORDER BY nome
+    `);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ erro: "Erro ao carregar produtos" });
@@ -37,10 +43,14 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ erro: "Dados incompletos" });
     }
 
-    if (id_cliente === "null") id_cliente = null;
+    if (id_cliente === "null" || id_cliente === "") id_cliente = null;
 
     // Concatena métodos para salvar na coluna única 'pagamento'
-    const resumoPagamento = pagamentos.map(p => `${p.metodo} (R$ ${p.valor})`).join(" + ");
+    const resumoPagamento = pagamentos.map(p => { 
+      const valorFormatado = Number(p.valor).toFixed(2); 
+      return `${p.metodo} (R$ ${valorFormatado})`;
+    }).join(" + ");
+
     const tipoCartaoPrincipal = pagamentos[0].metodo === "Cartao" ? pagamentos[0].tipo_cartao : null;
     const parcelasPrincipal = pagamentos[0].metodo === "Cartao" ? pagamentos[0].parcelas : null;
 

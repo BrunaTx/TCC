@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const precoUnit = Number(produto.preco);
             const qtd = valorTotalEtiqueta ? (valorTotalEtiqueta / precoUnit) : 1;
-            const qtdFinal = parseFloat(qtd.toFixed(3));
+            const qtdFinal = parseFloat(qtd.toFixed(2));
             
             adicionarAoCarrinho(produto.id_produto, produto.nome, precoUnit, qtdFinal, Number(produto.estoque), produto.tipo_venda);
             codigoBarrasVendaInput.value = "";
