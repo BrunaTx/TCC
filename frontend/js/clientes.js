@@ -270,28 +270,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = formatarDataBR(c.data);
 
-        let pagamento = c.pagamento || "Não informado";
+      let pagamento = c.pagamento || "Não informado";
+let totalComTaxa = c.total;
+let valorParcela = null;
 
-        if (c.pagamento === "Cartao") {
+if (c.pagamento === "Cartao") {
 
-          if (c.tipo_cartao === "debito") {
+  if (c.tipo_cartao === "debito") {
+    pagamento = "Cartão - Débito";
 
-            pagamento = "Cartão - Débito";
+    const taxa = 0.0137;
+    totalComTaxa = c.total / (1 - taxa);
 
-          } else if (c.tipo_cartao === "credito") {
+  } else if (c.tipo_cartao === "credito") {
 
-            const parcelas = c.parcelas || 1;
+    const parcelas = Number(c.parcelas) || 1;
 
-            if (parcelas > 1) {
-              pagamento = `Cartão - Crédito (${parcelas}x)`;
-            } else {
-              pagamento = "Cartão - Crédito à vista";
-            }
+    const taxasCredito = {
+      1: 0.03,
+      2: 0.0539,
+      3: 0.0612,
+      4: 0.0685,
+      5: 0.0757,
+      6: 0.0828,
+      7: 0.0899,
+      8: 0.0969,
+      9: 0.1038,
+      10: 0.1106,
+      11: 0.1174
+    };
 
-          }
+    const taxa = taxasCredito[parcelas] || 0.03;
+    totalComTaxa = c.total / (1 - taxa);
+    valorParcela = totalComTaxa / parcelas;
 
-        }
-
+    if (parcelas > 1) {
+      pagamento = `Cartão - Crédito (${parcelas}x de R$ ${valorParcela.toFixed(2)})`;
+    } else {
+      pagamento = `Cartão - Crédito à vista`;
+    }
+  }
+}
         const produtosHTML = c.produtos.map(p => `
           <div class="produto-item">
             <span>${p.nome}</span>
@@ -316,13 +335,13 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
             </div>
 
-            <div class="compra-footer">
-              <span>
-                <strong>Pagamento:</strong>
-                <span class="total">R$ ${c.total.toFixed(2)}</span>
-                <b>(${pagamento})</b>
-              </span>
-            </div>
+           <div class="compra-footer">
+  <span>
+    <strong>Pagamento:</strong>
+   <span class="total">R$ ${totalComTaxa.toFixed(2).replace('.', ',')}</span>
+    <b>(${pagamento})</b>
+  </span>
+</div>
 
           </div>
         `;
@@ -372,27 +391,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = formatarDataBR(c.data);
 
-      let pagamento = c.pagamento || "Não informado";
+     let pagamento = c.pagamento || "Não informado";
+let totalComTaxa = c.total;
+let valorParcela = null;
 
-      if (c.pagamento === "Cartao") {
+if (c.pagamento === "Cartao") {
 
-        if (c.tipo_cartao === "debito") {
+  if (c.tipo_cartao === "debito") {
 
-          pagamento = "Cartão - Débito";
+    pagamento = "Cartão - Débito";
 
-        } else if (c.tipo_cartao === "credito") {
+    const taxa = 0.0137;
+    totalComTaxa = c.total / (1 - taxa);
 
-          const parcelas = c.parcelas || 1;
+  } else if (c.tipo_cartao === "credito") {
 
-          if (parcelas > 1) {
-            pagamento = `Cartão - Crédito (${parcelas}x)`;
-          } else {
-            pagamento = "Cartão - Crédito à vista";
-          }
+    const parcelas = Number(c.parcelas) || 1;
 
-        }
+    const taxasCredito = {
+      1: 0.03,
+      2: 0.0539,
+      3: 0.0612,
+      4: 0.0685,
+      5: 0.0757,
+      6: 0.0828,
+      7: 0.0899,
+      8: 0.0969,
+      9: 0.1038,
+      10: 0.1106,
+      11: 0.1174
+    };
 
-      }
+    const taxa = taxasCredito[parcelas] || 0.03;
+    totalComTaxa = c.total / (1 - taxa);
+    valorParcela = totalComTaxa / parcelas;
+
+    if (parcelas > 1) {
+     pagamento = `Cartão - Crédito (${parcelas}x de R$ ${valorParcela.toFixed(2).replace('.', ',')})`;
+    } else {
+      pagamento = "Cartão - Crédito à vista";
+    }
+  }
+}
 
       doc.text(`Compra #${i + 1}`, 20, y);
       doc.text(`Data: ${data}`, 110, y);
@@ -400,8 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
       y += 6;
 
       doc.text(`Pagamento: ${pagamento}`, 20, y);
-      doc.text(`Total: R$ ${c.total.toFixed(2)}`, 110, y);
-
+      doc.text(`Total: R$ ${totalComTaxa.toFixed(2).replace('.', ',')}`, 110, y);
       y += 8;
 
       c.produtos.forEach(p => {

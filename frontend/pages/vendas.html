@@ -72,9 +72,16 @@
                 <h3>Carrinho</h3>
                 <div id="cartItems"></div>
                 <div class="totals-box" id="totalsBox">
-                    <div class="line-item"><span>Subtotal:</span> <span id="subtotalDisplay">R$ 0.00</span></div>
-                    <div class="line-item total-row"><span>TOTAL:</span> <span id="totalDisplay">R$ 0.00</span></div>
-                </div>
+    <div class="line-item">
+        <span>Subtotal (sem taxas):</span> 
+        <span id="subtotalDisplay">R$ 0.00</span>
+    </div>
+    <div class="line-item total-row" id="totalComTaxaWrapper" style="display:none; color: #d9534f;">
+        <span>TOTAL (com taxas):</span> 
+        <span id="totalComTaxaDisplay">R$ 0.00</span>
+    </div>
+    <span id="totalDisplay" style="display:none;">R$ 0.00</span>
+</div>
                 <button class="finalize-btn">Finalizar Venda</button>
             </div>
         </section>
