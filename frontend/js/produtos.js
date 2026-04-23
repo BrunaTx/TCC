@@ -87,7 +87,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${prod.categoria}</td>
         <td><span class="tag">${prod.tipo_venda === "kg" ? "Quilograma" : "Unidade"}</span></td>
         <td>R$ ${parseFloat(prod.preco).toFixed(2)}</td>
-        <td>${prod.tipo_venda === "kg" ? parseFloat(prod.estoque).toFixed(3) : prod.estoque} ${prod.tipo_venda === "kg" ? "kg" : "un"}</td>
+       <td>${
+  prod.tipo_venda === "kg"
+    ? Number(parseFloat(prod.estoque).toFixed(3)).toString().replace(/\.?0+$/, '')
+    : Math.round(prod.estoque)
+} ${prod.tipo_venda === "kg" ? "kg" : "un"}</td>
         <td>${prod.codigo_barras || "-"}</td>
         <td class="actions">
           <button type="button" class="btn-info">

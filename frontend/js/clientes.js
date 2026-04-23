@@ -14,6 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editingRow = null;
 
+  // TABELA DE TAXAS PARA O CÁLCULO
+  const taxasMaquininha = {
+    debito: 0.0137,
+    credito: {
+      1: 0.03, 2: 0.0539, 3: 0.0612, 4: 0.0685, 5: 0.0757,
+      6: 0.0828, 7: 0.0899, 8: 0.0969, 9: 0.1038,
+      10: 0.1106, 11: 0.1174, 12: 0.1241
+    }
+  };
+
   // =========================
   // FORMATAR DATA
   // =========================
@@ -255,6 +265,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
+  // =========================
+  // MOSTRAR COMPRAS (AJUSTADO)
+  // =========================
   function showPurchases(row, compras) {
 
     purchasesList.innerHTML = "";
@@ -270,51 +283,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = formatarDataBR(c.data);
 
-      let pagamento = c.pagamento || "Não informado";
-let totalComTaxa = c.total;
-let valorParcela = null;
+        // Lógica de cálculo de taxas e parcelas
+        let valorFinal = c.total;
+        let pagamentoDesc = c.pagamento || "Não informado";
 
-if (c.pagamento === "Cartao") {
+        if (c.pagamento === "Cartao") {
+          const taxa = c.tipo_cartao === "debito" ? taxasMaquininha.debito : (taxasMaquininha.credito[c.parcelas] || 0.03);
+          valorFinal = c.total * (1 + taxa);
 
-  if (c.tipo_cartao === "debito") {
-    pagamento = "Cartão - Débito";
+          if (c.tipo_cartao === "debito") {
+            pagamentoDesc = "Cartão - Débito";
+          } else {
+            const parcelas = c.parcelas || 1;
+            const valorParcela = valorFinal / parcelas;
+            pagamentoDesc = `Cartão - Crédito (${parcelas}x R$ ${valorParcela.toFixed(2).replace('.', ',')})`;
+          }
+        }
 
-    const taxa = 0.0137;
-    totalComTaxa = c.total / (1 - taxa);
-
-  } else if (c.tipo_cartao === "credito") {
-
-    const parcelas = Number(c.parcelas) || 1;
-
-    const taxasCredito = {
-      1: 0.03,
-      2: 0.0539,
-      3: 0.0612,
-      4: 0.0685,
-      5: 0.0757,
-      6: 0.0828,
-      7: 0.0899,
-      8: 0.0969,
-      9: 0.1038,
-      10: 0.1106,
-      11: 0.1174
-    };
-
-    const taxa = taxasCredito[parcelas] || 0.03;
-    totalComTaxa = c.total / (1 - taxa);
-    valorParcela = totalComTaxa / parcelas;
-
-    if (parcelas > 1) {
-      pagamento = `Cartão - Crédito (${parcelas}x de R$ ${valorParcela.toFixed(2)})`;
-    } else {
-      pagamento = `Cartão - Crédito à vista`;
-    }
-  }
-}
         const produtosHTML = c.produtos.map(p => `
           <div class="produto-item">
             <span>${p.nome}</span>
-            <span>x${p.quantidade}</span>
+            <span>x${Number(p.quantidade).toLocaleString('pt-BR', { maximumFractionDigits: 3 })}</span>
           </div>
         `).join("");
 
@@ -335,13 +324,13 @@ if (c.pagamento === "Cartao") {
               </div>
             </div>
 
-           <div class="compra-footer">
-  <span>
-    <strong>Pagamento:</strong>
-   <span class="total">R$ ${totalComTaxa.toFixed(2).replace('.', ',')}</span>
-    <b>(${pagamento})</b>
-  </span>
-</div>
+            <div class="compra-footer">
+              <span>
+                <strong>Pagamento:</strong>
+                <span class="total">R$ ${valorFinal.toFixed(2).replace('.', ',')}</span>
+                <b>(${pagamentoDesc})</b>
+              </span>
+            </div>
 
           </div>
         `;
@@ -363,6 +352,9 @@ if (c.pagamento === "Cartao") {
     purchasesModal.classList.remove("hidden");
   }
 
+  // =========================
+  // GERAR PDF (AJUSTADO)
+  // =========================
   function generatePDF(row, compras) {
 
     const { jsPDF } = window.jspdf;
@@ -391,60 +383,32 @@ if (c.pagamento === "Cartao") {
 
       const data = formatarDataBR(c.data);
 
-     let pagamento = c.pagamento || "Não informado";
-let totalComTaxa = c.total;
-let valorParcela = null;
+      let valorFinal = c.total;
+      let pagamentoDesc = c.pagamento || "Não informado";
 
-if (c.pagamento === "Cartao") {
+      if (c.pagamento === "Cartao") {
+        const taxa = c.tipo_cartao === "debito" ? taxasMaquininha.debito : (taxasMaquininha.credito[c.parcelas] || 0.03);
+        valorFinal = c.total * (1 + taxa);
 
-  if (c.tipo_cartao === "debito") {
-
-    pagamento = "Cartão - Débito";
-
-    const taxa = 0.0137;
-    totalComTaxa = c.total / (1 - taxa);
-
-  } else if (c.tipo_cartao === "credito") {
-
-    const parcelas = Number(c.parcelas) || 1;
-
-    const taxasCredito = {
-      1: 0.03,
-      2: 0.0539,
-      3: 0.0612,
-      4: 0.0685,
-      5: 0.0757,
-      6: 0.0828,
-      7: 0.0899,
-      8: 0.0969,
-      9: 0.1038,
-      10: 0.1106,
-      11: 0.1174
-    };
-
-    const taxa = taxasCredito[parcelas] || 0.03;
-    totalComTaxa = c.total / (1 - taxa);
-    valorParcela = totalComTaxa / parcelas;
-
-    if (parcelas > 1) {
-     pagamento = `Cartão - Crédito (${parcelas}x de R$ ${valorParcela.toFixed(2).replace('.', ',')})`;
-    } else {
-      pagamento = "Cartão - Crédito à vista";
-    }
-  }
-}
+        if (c.tipo_cartao === "debito") {
+          pagamentoDesc = "Cartão - Débito";
+        } else {
+          pagamentoDesc = `Cartão - Crédito (${c.parcelas}x)`;
+        }
+      }
 
       doc.text(`Compra #${i + 1}`, 20, y);
       doc.text(`Data: ${data}`, 110, y);
 
       y += 6;
 
-      doc.text(`Pagamento: ${pagamento}`, 20, y);
-      doc.text(`Total: R$ ${totalComTaxa.toFixed(2).replace('.', ',')}`, 110, y);
+      doc.text(`Pagamento: ${pagamentoDesc}`, 20, y);
+      doc.text(`Total: R$ ${valorFinal.toFixed(2).replace('.', ',')}`, 110, y);
+
       y += 8;
 
       c.produtos.forEach(p => {
-        doc.text(`• ${p.nome} x${p.quantidade}`, 25, y);
+        doc.text(`• ${p.nome} x${Number(p.quantidade).toLocaleString('pt-BR', { maximumFractionDigits: 3 })}`, 25, y);
         y += 6;
       });
 

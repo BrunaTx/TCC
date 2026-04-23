@@ -23,11 +23,11 @@ const produtosVendidosKg = Number(stats.produtosVendidosKg) || 0;
 document.querySelector(".stats-grid .stat-card:nth-child(1) .value").textContent = `R$ ${faturamento.toFixed(2)}`;
 document.querySelector(".stats-grid .stat-card:nth-child(1) .meta").textContent = `${vendas} vendas realizadas`;
 
-document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent = produtosVendidosUn;
+document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent = Math.round(produtosVendidosUn);
 document.querySelector(".stats-grid .stat-card:nth-child(2) .meta").textContent = "unidades no total";
 
-document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent = produtosVendidosKg;
-document.querySelector(".stats-grid .stat-card:nth-child(3) .meta").textContent = "kg no total";
+document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent = 
+  Number(produtosVendidosKg.toFixed(3)).toString().replace(/\.?0+$/, '');
 
 document.querySelector(".stats-grid .stat-card:nth-child(4) .value").textContent = estoqueBaixoUn;
 document.querySelector(".stats-grid .stat-card:nth-child(4) .meta").textContent = "produtos abaixo de 10 unidades";

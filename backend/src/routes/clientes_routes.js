@@ -12,6 +12,7 @@ router.get("/", async (req, res) => {
     const [rows] = await db.query(`
       SELECT id_cliente, nome, cpf, telefone, endereco
       FROM cliente
+       WHERE ativo = TRUE
       ORDER BY nome
     `);
 
@@ -103,8 +104,8 @@ router.delete("/:id", async (req, res) => {
 
     const { id } = req.params;
 
-    await db.query(
-      "DELETE FROM cliente WHERE id_cliente = ?",
+  await db.query(
+      "UPDATE cliente SET ativo = 0 WHERE id_cliente = ?",
       [id]
     );
 

@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error(err);
-      alert("Erro ao processar ação.");
+      alert("Categoria com Produto não pode ser excluída.");
     }
   });
 

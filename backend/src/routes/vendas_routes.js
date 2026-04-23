@@ -7,7 +7,7 @@ const db = require("../config/db");
 // ==========================
 router.get("/clientes", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT id_cliente, nome FROM cliente ORDER BY nome");
+    const [rows] = await db.query("SELECT id_cliente, nome FROM cliente WHERE ativo = TRUE ORDER BY nome");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ erro: "Erro ao carregar clientes" });
@@ -19,7 +19,6 @@ router.get("/clientes", async (req, res) => {
 // ==========================
 router.get("/produtos", async (req, res) => {
   try {
-    // Adicionado "WHERE ativo = TRUE" para que produtos excluídos não apareçam na lista de venda
     const [rows] = await db.query(`
       SELECT id_produto, nome, preco, estoque, tipo_venda 
       FROM produto 
@@ -33,11 +32,20 @@ router.get("/produtos", async (req, res) => {
 });
 
 // ==========================
-// REGISTRAR VENDA
+// REGISTRAR VENDA (COM DETALHE DE PARCELAS)
 // ==========================
 router.post("/", async (req, res) => {
   try {
     let { id_cliente, itens, pagamentos } = req.body;
+
+    const taxasMaquininha = {
+      debito: 0.0137,
+      credito: {
+        1: 0.03, 2: 0.0539, 3: 0.0612, 4: 0.0685, 5: 0.0757,
+        6: 0.0828, 7: 0.0899, 8: 0.0969, 9: 0.1038,
+        10: 0.1106, 11: 0.1174, 12: 0.1241
+      }
+    };
 
     if (!itens || !itens.length || !pagamentos || !pagamentos.length) {
       return res.status(400).json({ erro: "Dados incompletos" });
@@ -45,14 +53,37 @@ router.post("/", async (req, res) => {
 
     if (id_cliente === "null" || id_cliente === "") id_cliente = null;
 
-    // Concatena métodos para salvar na coluna única 'pagamento'
+    // Concatena métodos calculando o valor COM TAXA e o VALOR DA PARCELA
     const resumoPagamento = pagamentos.map(p => { 
-      const valorFormatado = Number(p.valor).toFixed(2); 
-      return `${p.metodo} (R$ ${valorFormatado})`;
+      let valorTotalComTaxa = Number(p.valor);
+      let infoTexto = "";
+
+      if (p.metodo === "Cartao") {
+        const taxa = p.tipo_cartao === "debito" 
+          ? taxasMaquininha.debito 
+          : (taxasMaquininha.credito[p.parcelas] || 0.03);
+        
+        valorTotalComTaxa = p.valor * (1 + taxa);
+
+        if (p.tipo_cartao === "credito") {
+          const qtdParcelas = Number(p.parcelas);
+          const valorParcela = valorTotalComTaxa / qtdParcelas;
+          // Exemplo: Cartão 4x de R$ 25,00 (Total R$ 100,00)
+          infoTexto = ` ${qtdParcelas}x de R$ ${valorParcela.toFixed(2).replace('.', ',')} (Total R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
+        } else {
+          infoTexto = ` Débito (R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
+        }
+      } else {
+        // Dinheiro ou Pix
+        infoTexto = ` (R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
+      }
+
+      return `${p.metodo}${infoTexto}`;
     }).join(" + ");
 
-    const tipoCartaoPrincipal = pagamentos[0].metodo === "Cartao" ? pagamentos[0].tipo_cartao : null;
-    const parcelasPrincipal = pagamentos[0].metodo === "Cartao" ? pagamentos[0].parcelas : null;
+    const pgCartao = pagamentos.find(p => p.metodo === "Cartao");
+    const tipoCartaoPrincipal = pgCartao ? pgCartao.tipo_cartao : null;
+    const parcelasPrincipal = pgCartao ? pgCartao.parcelas : null;
 
     // 1. Inserir Venda
     const [result] = await db.query(
