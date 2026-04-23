@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const dbPromise = require("../config/db");
 
 // ==========================
 // LISTAR CLIENTES
 // ==========================
 router.get("/clientes", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT id_cliente, nome FROM cliente WHERE ativo = TRUE ORDER BY nome");
+    const db = await dbPromise;
+    // SQLite: ativo = 1 (em vez de TRUE)
+    const rows = await db.all("SELECT id_cliente, nome FROM cliente WHERE ativo = 1 ORDER BY nome");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ erro: "Erro ao carregar clientes" });
@@ -19,10 +21,11 @@ router.get("/clientes", async (req, res) => {
 // ==========================
 router.get("/produtos", async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const db = await dbPromise;
+    const rows = await db.all(`
       SELECT id_produto, nome, preco, estoque, tipo_venda 
       FROM produto 
-      WHERE ativo = TRUE 
+      WHERE ativo = 1 
       ORDER BY nome
     `);
     res.json(rows);
@@ -32,10 +35,11 @@ router.get("/produtos", async (req, res) => {
 });
 
 // ==========================
-// REGISTRAR VENDA (COM DETALHE DE PARCELAS)
+// REGISTRAR VENDA
 // ==========================
 router.post("/", async (req, res) => {
   try {
+    const db = await dbPromise;
     let { id_cliente, itens, pagamentos } = req.body;
 
     const taxasMaquininha = {
@@ -53,7 +57,7 @@ router.post("/", async (req, res) => {
 
     if (id_cliente === "null" || id_cliente === "") id_cliente = null;
 
-    // Concatena métodos calculando o valor COM TAXA e o VALOR DA PARCELA
+    // A lógica de formatação do texto de pagamento permanece IGUAL
     const resumoPagamento = pagamentos.map(p => { 
       let valorTotalComTaxa = Number(p.valor);
       let infoTexto = "";
@@ -68,16 +72,13 @@ router.post("/", async (req, res) => {
         if (p.tipo_cartao === "credito") {
           const qtdParcelas = Number(p.parcelas);
           const valorParcela = valorTotalComTaxa / qtdParcelas;
-          // Exemplo: Cartão 4x de R$ 25,00 (Total R$ 100,00)
           infoTexto = ` ${qtdParcelas}x de R$ ${valorParcela.toFixed(2).replace('.', ',')} (Total R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
         } else {
           infoTexto = ` Débito (R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
         }
       } else {
-        // Dinheiro ou Pix
         infoTexto = ` (R$ ${valorTotalComTaxa.toFixed(2).replace('.', ',')})`;
       }
-
       return `${p.metodo}${infoTexto}`;
     }).join(" + ");
 
@@ -85,33 +86,40 @@ router.post("/", async (req, res) => {
     const tipoCartaoPrincipal = pgCartao ? pgCartao.tipo_cartao : null;
     const parcelasPrincipal = pgCartao ? pgCartao.parcelas : null;
 
-    // 1. Inserir Venda
-    const [result] = await db.query(
+    // --- INÍCIO DA TRANSAÇÃO ---
+    await db.run("BEGIN TRANSACTION");
+
+    // 1. Inserir Venda (NOW() vira CURRENT_TIMESTAMP)
+    const result = await db.run(
       `INSERT INTO venda (id_cliente, data, pagamento, tipo_cartao, parcelas)
-       VALUES (?, NOW(), ?, ?, ?)`,
+       VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?)`,
       [id_cliente, resumoPagamento, tipoCartaoPrincipal, parcelasPrincipal]
     );
 
-    const id_venda = result.insertId;
+    const id_venda = result.lastID; // SQLite usa lastID
 
-    // 2. Inserir Itens da Venda
-    const valoresItens = itens.map(i => [id_venda, i.id_produto, i.quantidade, i.preco]);
-    await db.query(
-      `INSERT INTO venda_item (id_venda, id_produto, quantidade, preco) VALUES ?`,
-      [valoresItens]
-    );
-
-    // 3. Atualizar Estoque
+    // 2. Inserir Itens da Venda e 3. Atualizar Estoque
+    // Fizemos em um loop para garantir compatibilidade total com SQLite
     for (let i of itens) {
-      await db.query(
+      // Inserir item
+      await db.run(
+        `INSERT INTO venda_item (id_venda, id_produto, quantidade, preco) VALUES (?, ?, ?, ?)`,
+        [id_venda, i.id_produto, i.quantidade, i.preco]
+      );
+
+      // Baixar estoque
+      await db.run(
         `UPDATE produto SET estoque = estoque - ? WHERE id_produto = ?`,
         [i.quantidade, i.id_produto]
       );
     }
 
+    await db.run("COMMIT");
     res.json({ sucesso: true, id_venda });
 
   } catch (err) {
+    const db = await dbPromise;
+    await db.run("ROLLBACK");
     console.error("ERRO AO REGISTRAR VENDA:", err);
     res.status(500).json({ erro: "Erro ao registrar venda" });
   }

@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const dbPromise = require("../config/db");
 
 router.get("/", async (req, res) => {
   try {
+    const db = await dbPromise;
     const tipo = req.query.tipo;
     const dataInicio = req.query.dataInicio;
     const dataFim = req.query.dataFim;
@@ -11,22 +12,27 @@ router.get("/", async (req, res) => {
     let filtro = "1=1";
     let params = [];
 
+    // TRADUÇÃO DA LÓGICA DE DATAS PARA SQLITE
     if (dataInicio && dataFim) {
-      filtro = "DATE(v.data) BETWEEN ? AND ?";
+      // No SQLite, date(v.data) funciona igual ao DATE(v.data) do MySQL
+      filtro = "date(v.data) BETWEEN ? AND ?";
       params = [dataInicio, dataFim];
     } else if (tipo === "Diario") {
-      filtro = "DATE(v.data) = CURDATE()";
+      // MySQL: CURDATE() -> SQLite: date('now')
+      filtro = "date(v.data) = date('now')";
     } else if (tipo === "Semanal") {
-      filtro = "v.data >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+      // MySQL: DATE_SUB(..., INTERVAL 7 DAY) -> SQLite: date('now', '-7 days')
+      filtro = "date(v.data) >= date('now', '-7 days')";
     } else if (tipo === "Mensal") {
-      filtro = "MONTH(v.data)=MONTH(CURDATE()) AND YEAR(v.data)=YEAR(CURDATE())";
+      // MySQL: MONTH() e YEAR() -> SQLite: strftime('%m', ...) e strftime('%Y', ...)
+      filtro = "strftime('%m', v.data) = strftime('%m', 'now') AND strftime('%Y', v.data) = strftime('%Y', 'now')";
     } else if (tipo === "Anual") {
-      filtro = "YEAR(v.data)=YEAR(CURDATE())";
-    } else {
-      filtro = "1=1";
+      // MySQL: YEAR() -> SQLite: strftime('%Y', ...)
+      filtro = "strftime('%Y', v.data) = strftime('%Y', 'now')";
     }
 
-    const [vendas] = await db.query(`
+    // Execução da query
+    const vendas = await db.all(`
       SELECT 
         p.nome,
         vi.quantidade,
@@ -42,19 +48,19 @@ router.get("/", async (req, res) => {
 
     const totalVendas = vendas.length;
 
-    // garante que quantidade e preco sejam números
+    // A lógica de cálculo (reduce) permanece IGUAL, pois é JavaScript puro
     const itensVendidos = vendas.reduce((s, v) => s + Number(v.quantidade), 0);
     const faturamento = vendas.reduce((s, v) => s + (Number(v.quantidade) * Number(v.preco)), 0);
 
     res.json({
       totalVendas,
-      itensVendidos: Number(itensVendidos.toFixed(2)), // duas casas decimais
-      faturamento: Number(faturamento.toFixed(2)),     // duas casas decimais
+      itensVendidos: Number(itensVendidos.toFixed(2)),
+      faturamento: Number(faturamento.toFixed(2)),
       detalhes: vendas
     });
 
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ erro: "Erro no relatório" });
   }
 });

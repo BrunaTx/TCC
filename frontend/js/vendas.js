@@ -130,6 +130,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
 
         </div>
+         <div id="trocoContainer" style="display:none; margin-top:15px; padding:10px;">
+    <div id="troco1" style="display:none;">
+        <strong style="color:#6f8864;">Troco Método 1: <span id="valorTroco1">R$ 0,00</span></strong>
+    </div>
 
         <div id="metodo2Container" style="display:none;">
 
@@ -165,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <div class="line-item"><span>Valor Recebido:</span>
 
-                    <input type="number" id="recebido2" step="0.01" style="width:50%; border: 1px solid #2ecc71;">
+                    <input type="number" id="recebido2" step="0.01" style="width:50%;">
 
                 </div>
 
@@ -192,11 +196,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         </div>
 
-        <div id="trocoContainer" style="display:none; margin-top:15px; padding:10px;">
-
-             <strong style="color:#6f8864;">Troco Total: <span id="valorTroco">R$ 0,00</span></strong>
-
-        </div>
+    <div id="troco2" style="display:none; margin-top:5px;">
+        <strong style="color:#6f8864;">Troco Método 2: <span id="valorTroco2">R$ 0,00</span></strong>
+    </div>
+</div>
 
     `;
 
@@ -294,15 +297,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipo = document.getElementById(`tipoCartao${id}`).value;
 
         for (let i = 1; i <= 12; i++) {
-            let valorParcela = total;
+            const valorBase = qtdMetodos.value === "2"
+    ? (id === 1 ? parseFloat(valorMetodo1.value) : parseFloat(valorMetodo2.value))
+    : total;
 
-            if (tipo === "credito") {
-                const taxa = taxas.credito[i] || 0;
-                const totalComTaxa = total * (1 + taxa);
-                valorParcela = totalComTaxa / i;
-            }
+if (!valorBase || isNaN(valorBase)) return;
 
-            const option = select.querySelector(`option[value="${i}"]`);
+let valorParcela = valorBase;
+
+if (tipo === "credito") {
+    const taxa = taxas.credito[i] || 0;
+    const totalComTaxa = valorBase * (1 + taxa);
+    valorParcela = totalComTaxa / i;
+}
+ const option = select.querySelector(`option[value="${i}"]`);
             if (option) {
                 option.textContent = `${i}x - R$ ${valorParcela.toFixed(2).replace('.', ',')}`;
             }
@@ -358,41 +366,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    function calcularTroco() {
+   function calcularTroco() {
 
-        let trocoTotal = 0;
+    let exibirContainer = false;
 
-        let exibirTroco = false;
+    const totalVendaStr = document.querySelector("#totalDisplay").textContent.replace("R$ ", "").replace(",", ".");
+    const totalVenda = parseFloat(totalVendaStr) || 0;
 
-        const totalVendaStr = document.querySelector("#totalDisplay").textContent.replace("R$ ", "").replace(",", ".");
+    [1, 2].forEach(id => {
 
-        const totalVenda = parseFloat(totalVendaStr) || 0;
+        const metodo = document.getElementById(`pagamentoSelect${id}`).value;
+        const trocoDiv = document.getElementById(`troco${id}`);
+        const trocoSpan = document.getElementById(`valorTroco${id}`);
 
+        if (metodo === "Dinheiro") {
 
+            const recebido = parseFloat(document.getElementById(`recebido${id}`).value) || 0;
 
-        [1, 2].forEach(id => {
+            const valorDevido = (qtdMetodos.value === "2")
+                ? (id === 1 ? parseFloat(valorMetodo1.value) || 0 : parseFloat(valorMetodo2.value) || 0)
+                : totalVenda;
 
-            const metodo = document.getElementById(`pagamentoSelect${id}`).value;
+            const troco = recebido > valorDevido ? (recebido - valorDevido) : 0;
 
-            if (metodo === "Dinheiro") {
+            trocoSpan.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
+            trocoDiv.style.display = "block";
 
-                exibirTroco = true;
+            if (troco > 0) exibirContainer = true;
 
-                const recebido = parseFloat(document.getElementById(`recebido${id}`).value) || 0;
+        } else {
+            trocoDiv.style.display = "none";
+        }
 
-                let valorDevido = (qtdMetodos.value === "2")
+         document.getElementById("trocoContainer").style.display = exibirContainer ? "block" : "none";
 
-                    ? (id === 1 ? parseFloat(valorMetodo1.value) || 0 : parseFloat(valorMetodo2.value) || 0)
+    });
 
-                    : totalVenda;
+   
 
-               
-
-                if (recebido > valorDevido) trocoTotal += (recebido - valorDevido);
-
-            }
-
-        });
 
 
 

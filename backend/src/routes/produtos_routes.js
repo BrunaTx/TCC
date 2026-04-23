@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const dbPromise = require("../config/db");
 
 // ==========================================
 // LISTAR TODOS OS PRODUTOS (SOMENTE ATIVOS)
 // ==========================================
 router.get("/", async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const db = await dbPromise;
+    // SQLite usa 1 para TRUE
+    const rows = await db.all(`
       SELECT 
         p.id_produto,
         p.nome,
@@ -20,7 +22,7 @@ router.get("/", async (req, res) => {
         p.descricao
       FROM produto p
       JOIN categoria c ON p.id_categoria = c.id_categoria
-      WHERE p.ativo = TRUE
+      WHERE p.ativo = 1
       ORDER BY p.nome
     `);
     res.json(rows);
@@ -35,8 +37,9 @@ router.get("/", async (req, res) => {
 // ==========================================
 router.get("/categoria/:id", async (req, res) => {
   try {
+    const db = await dbPromise;
     const id_categoria = req.params.id;
-    const [rows] = await db.query(`
+    const rows = await db.all(`
       SELECT 
         p.id_produto,
         p.nome,
@@ -49,7 +52,7 @@ router.get("/categoria/:id", async (req, res) => {
         p.descricao
       FROM produto p
       JOIN categoria c ON p.id_categoria = c.id_categoria
-      WHERE p.id_categoria = ? AND p.ativo = TRUE
+      WHERE p.id_categoria = ? AND p.ativo = 1
       ORDER BY p.nome
     `, [id_categoria]);
     res.json(rows);
@@ -64,21 +67,23 @@ router.get("/categoria/:id", async (req, res) => {
 // ==========================================
 router.get("/codigo/:codigo", async (req, res) => {
   try {
+    const db = await dbPromise;
     const { codigo } = req.params;
 
-    const [rows] = await db.query(
+    // Usamos .get() porque queremos apenas um produto
+    const row = await db.get(
       `SELECT 
         id_produto, nome, preco, estoque, tipo_venda, codigo_barras
       FROM produto
-      WHERE codigo_barras = ? AND ativo = TRUE`,
+      WHERE codigo_barras = ? AND ativo = 1`,
       [codigo]
     );
 
-    if (!rows.length) {
+    if (!row) {
       return res.status(404).json({ erro: "Produto não encontrado ou inativo" });
     }
 
-    res.json(rows[0]);
+    res.json(row);
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao buscar produto" });
@@ -90,17 +95,19 @@ router.get("/codigo/:codigo", async (req, res) => {
 // =========================
 router.post("/", async (req, res) => {
   try {
+    const db = await dbPromise;
     const { nome, id_categoria, tipo_venda, preco, estoque, descricao, codigo_barras } = req.body;
     
-    // Incluímos 'ativo' como TRUE por padrão no INSERT
-    const [result] = await db.query(
+    // No SQLite usamos 1 para representar TRUE no campo ativo
+    const result = await db.run(
       `INSERT INTO produto (nome, codigo_barras, id_categoria, tipo_venda, preco, estoque, descricao, ativo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
       [nome, codigo_barras, id_categoria, tipo_venda, preco, estoque, descricao]
     );
     
-    const [rows] = await db.query(`SELECT * FROM produto WHERE id_produto = ?`, [result.insertId]);
-    res.json(rows[0]);
+    // Pegamos o ID recém-criado com result.lastID
+    const row = await db.get(`SELECT * FROM produto WHERE id_produto = ?`, [result.lastID]);
+    res.json(row);
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao criar produto." });
@@ -112,18 +119,19 @@ router.post("/", async (req, res) => {
 // =========================
 router.put("/:id", async (req, res) => {
   try {
+    const db = await dbPromise;
     const id = req.params.id;
     const { nome, codigo_barras, id_categoria, tipo_venda, preco, estoque, descricao } = req.body;
 
-    await db.query(
+    await db.run(
       `UPDATE produto
        SET nome=?, codigo_barras=?, id_categoria=?, tipo_venda=?, preco=?, estoque=?, descricao=?
        WHERE id_produto=?`,
       [nome, codigo_barras, id_categoria, tipo_venda, preco, estoque, descricao, id]
     );
 
-    const [rows] = await db.query(`SELECT * FROM produto WHERE id_produto = ?`, [id]);
-    res.json(rows[0]);
+    const row = await db.get(`SELECT * FROM produto WHERE id_produto = ?`, [id]);
+    res.json(row);
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao atualizar produto." });
@@ -136,8 +144,9 @@ router.put("/:id", async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    // Muda para FALSE para que o GET acima ignore este produto
-    await db.query("UPDATE produto SET ativo = FALSE WHERE id_produto = ?", [id]);
+    const db = await dbPromise;
+    // Muda ativo para 0 (FALSE no SQLite)
+    await db.run("UPDATE produto SET ativo = 0 WHERE id_produto = ?", [id]);
     res.json({ message: "Produto removido da lista!" });
   } catch (err) {
     console.error(err);

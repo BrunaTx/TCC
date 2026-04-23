@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const dbPromise = require("../config/db");
 
 // =============================
 // LISTAR PRODUTOS PARA ESTOQUE
 // =============================
 router.get("/", async (req, res) => {
   try {
-    // Adicionado WHERE p.ativo = TRUE para listar apenas produtos ativos
-    const [rows] = await db.query(`
+    const db = await dbPromise;
+    // No SQLite, TRUE é 1. O JOIN continua igual.
+    const rows = await db.all(`
       SELECT 
         p.id_produto,
         p.nome,
@@ -18,7 +19,7 @@ router.get("/", async (req, res) => {
       FROM produto p
       LEFT JOIN categoria c 
         ON p.id_categoria = c.id_categoria
-      WHERE p.ativo = TRUE
+      WHERE p.ativo = 1
       ORDER BY p.nome
     `);
 
@@ -34,12 +35,12 @@ router.get("/", async (req, res) => {
 // =============================
 router.put("/:id", async (req, res) => {
   try {
+    const db = await dbPromise;
     const { id } = req.params;
     const { estoque } = req.body;
 
-    // Também garantimos que só atualiza se estiver ativo (opcional, mas seguro)
-    await db.query(
-      "UPDATE produto SET estoque = ? WHERE id_produto = ? AND ativo = TRUE",
+    await db.run(
+      "UPDATE produto SET estoque = ? WHERE id_produto = ? AND ativo = 1",
       [estoque, id]
     );
 
@@ -55,32 +56,34 @@ router.put("/:id", async (req, res) => {
 // =============================
 router.post("/", async (req, res) => {
   const { id_cliente, pagamento, itens } = req.body;
-  const conn = await db.getConnection();
+  const db = await dbPromise;
 
   try {
-    await conn.beginTransaction();
+    // Inicia a transação no SQLite
+    await db.run("BEGIN TRANSACTION");
 
     // 1. Inserir a venda pai
-    const [venda] = await conn.query(
-      "INSERT INTO venda (id_cliente, pagamento, data) VALUES (?, ?, NOW())",
+    // MySQL usa NOW(), SQLite usa CURRENT_TIMESTAMP
+    const venda = await db.run(
+      "INSERT INTO venda (id_cliente, pagamento, data) VALUES (?, ?, CURRENT_TIMESTAMP)",
       [id_cliente, pagamento]
     );
 
-    const id_venda = venda.insertId;
+    // No SQLite, o ID gerado fica em .lastID (no MySQL era .insertId)
+    const id_venda = venda.lastID;
 
     // 2. Loop para itens e baixa de estoque
     for (const item of itens) {
       // Insere o item da venda
-      await conn.query(
+      await db.run(
         `INSERT INTO venda_item 
         (id_venda, id_produto, quantidade, preco)
         VALUES (?, ?, ?, ?)`,
         [id_venda, item.id_produto, item.quantidade, item.preco]
       );
 
-      // Baixa o estoque (Independente de estar ativo ou não, 
-      // para manter o saldo correto caso o produto tenha sido desativado agora)
-      await conn.query(
+      // Baixa o estoque
+      await db.run(
         `UPDATE produto
          SET estoque = estoque - ?
          WHERE id_produto = ?`,
@@ -88,15 +91,15 @@ router.post("/", async (req, res) => {
       );
     }
 
-    await conn.commit();
+    // Finaliza a transação com sucesso
+    await db.run("COMMIT");
     res.json({ message: "Venda registrada com sucesso", id_venda });
 
   } catch (error) {
-    await conn.rollback();
+    // Se der erro em qualquer parte, desfaz tudo (Rollback)
+    await db.run("ROLLBACK");
     console.error(error);
     res.status(500).json({ erro: "Erro ao registrar venda" });
-  } finally {
-    conn.release();
   }
 });
 

@@ -1,35 +1,40 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const dbPromise = require("../config/db");
 
 router.get("/", async (req, res) => {
   try {
+    const db = await dbPromise;
 
-    const [faturamentoRes] = await db.query(`
+    // Faturamento e total de vendas do dia
+    // MySQL: DATE(v.data) = CURDATE() -> SQLite: date(v.data) = date('now')
+    const faturamentoRes = await db.get(`
       SELECT 
         SUM(vi.preco * vi.quantidade) AS faturamento,
         COUNT(DISTINCT v.id_venda) AS vendas
       FROM venda v
       JOIN venda_item vi ON v.id_venda = vi.id_venda
-      WHERE DATE(v.data) = CURDATE()
+      WHERE date(v.data) = date('now')
     `);
 
-
-    const [estoqueBaixoUnRes] = await db.query(`
+    // Contagem de estoque baixo (Unidade)
+    const estoqueBaixoUnRes = await db.get(`
       SELECT COUNT(*) AS estoqueBaixoUn
       FROM produto
       WHERE tipo_venda = 'un'
       AND estoque <= 10
     `);
 
-    const [estoqueBaixoKgRes] = await db.query(`
+    // Contagem de estoque baixo (Quilo)
+    const estoqueBaixoKgRes = await db.get(`
       SELECT COUNT(*) AS estoqueBaixoKg
       FROM produto
       WHERE tipo_venda = 'kg'
       AND estoque <= 5
     `);
 
-    const [produtosEstoqueBaixoRes] = await db.query(`
+    // Lista de produtos com estoque baixo
+    const produtosEstoqueBaixoRes = await db.all(`
       SELECT nome, estoque, tipo_venda
       FROM produto
       WHERE 
@@ -39,89 +44,91 @@ router.get("/", async (req, res) => {
       ORDER BY nome
     `);
 
-    const [maisVendidoUnRes] = await db.query(`
+    // Mais vendido (Unidade)
+    const maisVendidoUnRes = await db.get(`
       SELECT p.nome, SUM(vi.quantidade) AS total
       FROM venda v
       JOIN venda_item vi ON v.id_venda = vi.id_venda
       JOIN produto p ON vi.id_produto = p.id_produto
-      WHERE DATE(v.data) = CURDATE()
+      WHERE date(v.data) = date('now')
       AND p.tipo_venda = 'un'
       GROUP BY p.id_produto
       ORDER BY total DESC
       LIMIT 1
     `);
 
-    const [maisVendidoKgRes] = await db.query(`
+    // Mais vendido (Quilo)
+    const maisVendidoKgRes = await db.get(`
       SELECT p.nome, SUM(vi.quantidade) AS total
       FROM venda v
       JOIN venda_item vi ON v.id_venda = vi.id_venda
       JOIN produto p ON vi.id_produto = p.id_produto
-      WHERE DATE(v.data) = CURDATE()
+      WHERE date(v.data) = date('now')
       AND p.tipo_venda = 'kg'
       GROUP BY p.id_produto
       ORDER BY total DESC
       LIMIT 1
     `);
 
-    const [menosVendidoUnRes] = await db.query(`
+    // Menos vendido (Unidade)
+    const menosVendidoUnRes = await db.get(`
       SELECT p.nome, SUM(vi.quantidade) AS total
       FROM venda v
       JOIN venda_item vi ON v.id_venda = vi.id_venda
       JOIN produto p ON vi.id_produto = p.id_produto
-      WHERE DATE(v.data) = CURDATE()
+      WHERE date(v.data) = date('now')
       AND p.tipo_venda = 'un'
       GROUP BY p.id_produto
       ORDER BY total ASC
       LIMIT 1
     `);
 
-    const [menosVendidoKgRes] = await db.query(`
+    // Menos vendido (Quilo)
+    const menosVendidoKgRes = await db.get(`
       SELECT p.nome, SUM(vi.quantidade) AS total
       FROM venda v
       JOIN venda_item vi ON v.id_venda = vi.id_venda
       JOIN produto p ON vi.id_produto = p.id_produto
-      WHERE DATE(v.data) = CURDATE()
+      WHERE date(v.data) = date('now')
       AND p.tipo_venda = 'kg'
       GROUP BY p.id_produto
       ORDER BY total ASC
       LIMIT 1
     `);
-    const [produtosVendidosUnRes] = await db.query(`
-  SELECT SUM(vi.quantidade) AS total
-  FROM venda v
-  JOIN venda_item vi ON v.id_venda = vi.id_venda
-  JOIN produto p ON vi.id_produto = p.id_produto
-  WHERE DATE(v.data) = CURDATE()
-  AND p.tipo_venda = 'un'
-`);
 
-const [produtosVendidosKgRes] = await db.query(`
-  SELECT SUM(vi.quantidade) AS total
-  FROM venda v
-  JOIN venda_item vi ON v.id_venda = vi.id_venda
-  JOIN produto p ON vi.id_produto = p.id_produto
-  WHERE DATE(v.data) = CURDATE()
-  AND p.tipo_venda = 'kg'
-`);
+    // Total de produtos vendidos (Unidade)
+    const produtosVendidosUnRes = await db.get(`
+      SELECT SUM(vi.quantidade) AS total
+      FROM venda v
+      JOIN venda_item vi ON v.id_venda = vi.id_venda
+      JOIN produto p ON vi.id_produto = p.id_produto
+      WHERE date(v.data) = date('now')
+      AND p.tipo_venda = 'un'
+    `);
 
+    // Total de produtos vendidos (Quilo)
+    const produtosVendidosKgRes = await db.get(`
+      SELECT SUM(vi.quantidade) AS total
+      FROM venda v
+      JOIN venda_item vi ON v.id_venda = vi.id_venda
+      JOIN produto p ON vi.id_produto = p.id_produto
+      WHERE date(v.data) = date('now')
+      AND p.tipo_venda = 'kg'
+    `);
+
+    // Resposta final montada exatamente como o seu original esperava
     res.json({
-      faturamento: faturamentoRes[0].faturamento || 0,
-      vendas: faturamentoRes[0].vendas || 0,
-      produtosVendidosUn: produtosVendidosUnRes[0].total || 0,
-produtosVendidosKg: produtosVendidosKgRes[0].total || 0,
-
-      estoqueBaixoUn: estoqueBaixoUnRes[0].estoqueBaixoUn || 0,
-      estoqueBaixoKg: estoqueBaixoKgRes[0].estoqueBaixoKg || 0,
-
+      faturamento: faturamentoRes.faturamento || 0,
+      vendas: faturamentoRes.vendas || 0,
+      produtosVendidosUn: produtosVendidosUnRes.total || 0,
+      produtosVendidosKg: produtosVendidosKgRes.total || 0,
+      estoqueBaixoUn: estoqueBaixoUnRes.estoqueBaixoUn || 0,
+      estoqueBaixoKg: estoqueBaixoKgRes.estoqueBaixoKg || 0,
       produtosEstoqueBaixo: produtosEstoqueBaixoRes,
-
-      maisVendidoUn: maisVendidoUnRes[0] || null,
-      maisVendidoKg: maisVendidoKgRes[0] || null,
-
-      
-
-      menosVendidoUn: menosVendidoUnRes[0] || null,
-      menosVendidoKg: menosVendidoKgRes[0] || null
+      maisVendidoUn: maisVendidoUnRes || null,
+      maisVendidoKg: maisVendidoKgRes || null,
+      menosVendidoUn: menosVendidoUnRes || null,
+      menosVendidoKg: menosVendidoKgRes || null
     });
 
   } catch (error) {

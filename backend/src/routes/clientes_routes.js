@@ -1,46 +1,43 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
-
+const dbPromise = require("../config/db");
 
 // ==========================
 // LISTAR TODOS OS CLIENTES
 // ==========================
 router.get("/", async (req, res) => {
   try {
+    const db = await dbPromise;
 
-    const [rows] = await db.query(`
+    // SQLite usa 1 para TRUE e 0 para FALSE por padrão
+    const rows = await db.all(`
       SELECT id_cliente, nome, cpf, telefone, endereco
       FROM cliente
-       WHERE ativo = TRUE
+      WHERE ativo = 1
       ORDER BY nome
     `);
 
     res.json(rows);
-
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ erro: "Erro ao listar clientes" });
-
   }
 });
-
 
 // ==========================
 // CRIAR CLIENTE
 // ==========================
 router.post("/", async (req, res) => {
-
   try {
-
+    const db = await dbPromise;
     const { nome, cpf, telefone, endereco } = req.body;
 
     if (!nome || !cpf) {
       return res.status(400).json({ erro: "Nome e CPF são obrigatórios" });
     }
 
-    const [existe] = await db.query(
+    // Usamos .all para verificar se existe (retorna array vazio se não houver)
+    const existe = await db.all(
       "SELECT id_cliente FROM cliente WHERE cpf = ?",
       [cpf]
     );
@@ -49,34 +46,28 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ erro: "CPF já cadastrado" });
     }
 
-    await db.query(
+    await db.run(
       "INSERT INTO cliente (nome, cpf, telefone, endereco) VALUES (?, ?, ?, ?)",
       [nome, cpf, telefone, endereco]
     );
 
     res.json({ sucesso: true });
-
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ erro: "Erro ao criar cliente" });
-
   }
-
 });
-
 
 // ==========================
 // EDITAR CLIENTE
 // ==========================
 router.put("/:id", async (req, res) => {
-
   try {
-
+    const db = await dbPromise;
     const { id } = req.params;
     const { nome, cpf, telefone, endereco } = req.body;
 
-    await db.query(
+    await db.run(
       `UPDATE cliente 
        SET nome = ?, cpf = ?, telefone = ?, endereco = ?
        WHERE id_cliente = ?`,
@@ -84,53 +75,41 @@ router.put("/:id", async (req, res) => {
     );
 
     res.json({ sucesso: true });
-
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ erro: "Erro ao atualizar cliente" });
-
   }
-
 });
 
-
 // ==========================
-// EXCLUIR CLIENTE
+// EXCLUIR CLIENTE (Desativação lógica)
 // ==========================
 router.delete("/:id", async (req, res) => {
-
   try {
-
+    const db = await dbPromise;
     const { id } = req.params;
 
-  await db.query(
+    await db.run(
       "UPDATE cliente SET ativo = 0 WHERE id_cliente = ?",
       [id]
     );
 
     res.json({ sucesso: true });
-
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ erro: "Erro ao excluir cliente" });
-
   }
-
 });
-
 
 // ==========================
 // HISTÓRICO DE COMPRAS
 // ==========================
 router.get("/compras/:id_cliente", async (req, res) => {
-
   try {
-
+    const db = await dbPromise;
     const id_cliente = req.params.id_cliente;
 
-    const [vendas] = await db.query(`
+    const vendas = await db.all(`
       SELECT 
         v.id_venda,
         v.data,
@@ -150,9 +129,7 @@ router.get("/compras/:id_cliente", async (req, res) => {
     const historico = {};
 
     vendas.forEach(v => {
-
       if (!historico[v.id_venda]) {
-
         historico[v.id_venda] = {
           data: v.data,
           pagamento: v.pagamento,
@@ -161,7 +138,6 @@ router.get("/compras/:id_cliente", async (req, res) => {
           total: 0,
           produtos: []
         };
-
       }
 
       historico[v.id_venda].produtos.push({
@@ -171,18 +147,13 @@ router.get("/compras/:id_cliente", async (req, res) => {
       });
 
       historico[v.id_venda].total += v.quantidade * v.preco;
-
     });
 
     res.json(historico);
-
   } catch (err) {
-
     console.error(err);
     res.status(500).json({ erro: "Erro ao buscar compras" });
-
   }
-
 });
 
 module.exports = router;
