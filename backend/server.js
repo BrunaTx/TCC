@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./src/backup/backup");
 
 const express = require("express");
 const cors = require("cors");
