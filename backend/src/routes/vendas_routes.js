@@ -31,12 +31,12 @@ router.get("/produtos", async (req, res) => {
   try {
     const db = await dbPromise;
 
-    const rows = db.prepare(`
-      SELECT id_produto, nome, preco, estoque, tipo_venda 
-      FROM produto 
-      WHERE ativo = 1 
-      ORDER BY nome
-    `).all();
+   const rows = db.prepare(`
+  SELECT id_produto, nome, preco, estoque, tipo_venda, codigo_barras
+  FROM produto 
+  WHERE ativo = 1 
+  ORDER BY nome
+`).all();
 
     res.json(rows);
 

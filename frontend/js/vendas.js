@@ -253,9 +253,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             produtos.forEach(p => {
 
-                produtoHtml += `<option value="${p.id_produto}" data-preco="${p.preco}" data-estoque="${p.estoque}" data-tipo="${p.tipo_venda}">${p.nome} - R$ ${Number(p.preco).toFixed(2)}</option>`;
+                console.log(p);
 
-            });
+                produtoHtml += `
+                <option 
+                    value="${p.id_produto}" 
+                    data-preco="${p.preco}" 
+                    data-estoque="${p.estoque}" 
+                    data-tipo="${p.tipo_venda}"
+        //n tinha isso aqui, adicionei pra funcionar o leitor de codigo de barras
+                    data-codigo="${p.codigo_barras || ''}"
+                >
+                    ${p.nome} - R$ ${Number(p.preco).toFixed(2)}
+                </option>`;
+                            });
 
             produtoSelect.innerHTML = produtoHtml;
 
@@ -263,11 +274,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    //adicionei isso aqui p funcionar 
+    codigoBarrasVendaInput.addEventListener("keydown", function(e) {
+
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    const codigo = this.value.trim();
+
+    if (!codigo) return;
+
+    let produtoEncontrado = null;
+    let quantidadeCalculada = 1;
+
+    Array.from(produtoSelect.options).forEach(option => {
+
+        const codigoProduto = option.dataset.codigo || "";
+
+        // =========================
+        // PRODUTO KG (etiqueta balança)
+        // =========================
+        if (
+            codigo.startsWith("2") &&
+            codigo.length === 13 &&
+            codigoProduto === codigo.substring(0, 7)
+        ) {
+
+            produtoEncontrado = option;
+
+            // preço lido na etiqueta
+            const valorEtiqueta =
+                parseInt(codigo.substring(7, 12)) / 100;
+
+            // preço do kg do produto
+            const precoKg =
+                parseFloat(option.dataset.preco);
+
+            // peso calculado
+            quantidadeCalculada =
+                valorEtiqueta / precoKg;
+        }
+
+        // =========================
+        // PRODUTO UNIDADE
+        // =========================
+        else if (codigoProduto === codigo) {
+
+            produtoEncontrado = option;
+            quantidadeCalculada = 1;
+        }
+
+    });
+
+    if (!produtoEncontrado) {
+
+        alert("Produto não encontrado!");
+
+        this.value = "";
+
+        return;
+    }
+
+    // seleciona produto
+    $('#produtoSelect')
+        .val(produtoEncontrado.value)
+        .trigger('change');
+
+    // coloca peso/quantidade correta
+    quantidadeInput.value =
+        quantidadeCalculada.toFixed(3);
+
+    // adiciona ao carrinho
+    addBtn.click();
+
+    // limpa leitor
+    this.value = "";
+
+    // mantém foco
+    this.focus();
+
+});
 
 
-    $('#produtoSelect').on('change', function() {
+   $('#produtoSelect').on('change', function() {
 
-        const opt = this.selectedOptions[0];
+    const opt = produtoSelect.options[produtoSelect.selectedIndex];
 
         if(!opt || !opt.dataset.preco) return;
 
@@ -370,48 +462,58 @@ if (tipo === "credito") {
 
     let exibirContainer = false;
 
-    const totalVendaStr = document.querySelector("#totalDisplay").textContent.replace("R$ ", "").replace(",", ".");
+    const totalVendaStr = document.querySelector("#totalDisplay")
+        .textContent
+        .replace("R$ ", "")
+        .replace(",", ".");
+
     const totalVenda = parseFloat(totalVendaStr) || 0;
 
     [1, 2].forEach(id => {
 
         const metodo = document.getElementById(`pagamentoSelect${id}`).value;
+
         const trocoDiv = document.getElementById(`troco${id}`);
+
         const trocoSpan = document.getElementById(`valorTroco${id}`);
 
         if (metodo === "Dinheiro") {
 
-            const recebido = parseFloat(document.getElementById(`recebido${id}`).value) || 0;
+            const recebido =
+                parseFloat(document.getElementById(`recebido${id}`).value) || 0;
 
-            const valorDevido = (qtdMetodos.value === "2")
-                ? (id === 1 ? parseFloat(valorMetodo1.value) || 0 : parseFloat(valorMetodo2.value) || 0)
-                : totalVenda;
+            const valorDevido =
+                (qtdMetodos.value === "2")
+                    ? (id === 1
+                        ? parseFloat(valorMetodo1.value) || 0
+                        : parseFloat(valorMetodo2.value) || 0)
+                    : totalVenda;
 
-            const troco = recebido > valorDevido ? (recebido - valorDevido) : 0;
+            const troco =
+                recebido > valorDevido
+                    ? (recebido - valorDevido)
+                    : 0;
 
-            trocoSpan.textContent = `R$ ${troco.toFixed(2).replace('.', ',')}`;
+            trocoSpan.textContent =
+                `R$ ${troco.toFixed(2).replace('.', ',')}`;
+
             trocoDiv.style.display = "block";
 
-            if (troco > 0) exibirContainer = true;
+            if (troco > 0) {
+                exibirContainer = true;
+            }
 
         } else {
-            trocoDiv.style.display = "none";
-        }
 
-         document.getElementById("trocoContainer").style.display = exibirContainer ? "block" : "none";
+            trocoDiv.style.display = "none";
+
+        }
 
     });
 
-   
-
-
-
-
-        document.getElementById("trocoContainer").style.display = exibirTroco ? "block" : "none";
-
-        document.getElementById("valorTroco").textContent = `R$ ${trocoTotal.toFixed(2).replace('.', ',')}`;
-
-    }
+    document.getElementById("trocoContainer").style.display =
+        exibirContainer ? "block" : "none";
+}
 
 
 
@@ -516,11 +618,11 @@ if (tipo === "credito") {
 
     addBtn.addEventListener("click", () => {
 
-        const opt = produtoSelect.selectedOptions[0];
+    const opt = produtoSelect.options[produtoSelect.selectedIndex];
 
         let qtdRaw = Number(quantidadeInput.value);
 
-        if(!opt || !opt.value || qtdRaw <= 0) return alert("Verifique produto e quantidade");
+       if (!opt || produtoSelect.selectedIndex === -1 || qtdRaw <= 0) return alert("Verifique produto e quantidade");
 
         if(opt.dataset.tipo === 'un' && !Number.isInteger(qtdRaw)) return alert("Unidades devem ser inteiras.");
 
