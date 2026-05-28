@@ -686,8 +686,6 @@ if (tipo === "credito") {
 
     });
 
-    
-
 
     finalizarBtn.addEventListener("click", async () => {
 
