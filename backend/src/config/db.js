@@ -1,23 +1,21 @@
-const sqlite3 = require('sqlite3');
-const { open } = require('sqlite');
+const Database = require('better-sqlite3');
 const path = require('path');
 
 /**
  * Função que gerencia a conexão e a estrutura do banco de dados.
  * Ela substitui o MySQL/XAMPP para tornar o projeto portátil.
  */
-async function configurarBanco() {
-  const db = await open({
-    // Cria o arquivo 'banco_loja.db' na pasta raiz do backend
-    filename: path.join(__dirname, '../banco_loja.db'),
-    driver: sqlite3.Database
-  });
+function configurarBanco() {
 
-  // Habilita o suporte a chaves estrangeiras (essencial para as relações entre tabelas)
-  await db.get("PRAGMA foreign_keys = ON");
+  const db = new Database(
+    path.join(__dirname, '../banco_loja.db')
+  );
 
-  // 1. CRIAÇÃO DAS TABELAS (Executado apenas se elas não existirem)
-  await db.exec(`
+  // Habilita o suporte a chaves estrangeiras
+  db.pragma('foreign_keys = ON');
+
+  // 1. CRIAÇÃO DAS TABELAS
+  db.exec(`
     CREATE TABLE IF NOT EXISTS categoria (
       id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL
@@ -73,9 +71,8 @@ async function configurarBanco() {
     );
   `);
 
-  // 2. INSERÇÃO DO USUÁRIO PADRÃO (Apenas se ele não existir)
-  // Isso permite que o lojista logue logo de cara sem precisar cadastrar via terminal
-  await db.run(`
+  // 2. INSERÇÃO DO USUÁRIO PADRÃO
+  db.exec(`
     INSERT OR IGNORE INTO usuario (nome, usuario, senha) 
     VALUES ('Administrador', 'essenciamar@gmail.com', 'essenciamar')
   `);
@@ -87,5 +84,4 @@ async function configurarBanco() {
   return db;
 }
 
-// Exporta a promessa de conexão. Nas rotas, use: const db = await dbPromise;
 module.exports = configurarBanco();

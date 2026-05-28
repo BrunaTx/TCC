@@ -9,12 +9,12 @@ router.post("/login", async (req, res) => {
     const db = await dbPromise; // ESPERA a conexão abrir
     const { usuario, senha } = req.body;
 
-    // No SQLite usamos .get() quando queremos apenas UM registro (mais rápido e limpo)
-    // E não usamos [rows], pois ele retorna o objeto direto ou 'undefined'
-    const user = await db.get(
-      "SELECT id_usuario, nome FROM usuario WHERE usuario = ? AND senha = ?",
-      [usuario, senha]
-    );
+    // Consulta adaptada para better-sqlite3
+    const user = db
+      .prepare(
+        "SELECT id_usuario, nome FROM usuario WHERE usuario = ? AND senha = ?"
+      )
+      .get(usuario, senha);
 
     if (user) {
       // cria sessão
@@ -22,14 +22,26 @@ router.post("/login", async (req, res) => {
         id: user.id_usuario,
         nome: user.nome
       };
-      return res.json({ sucesso: true, nome: user.nome });
+
+      return res.json({
+        sucesso: true,
+        nome: user.nome
+      });
+
     } else {
-      return res.status(401).json({ sucesso: false, mensagem: "Usuário ou senha incorretos." });
+      return res.status(401).json({
+        sucesso: false,
+        mensagem: "Usuário ou senha incorretos."
+      });
     }
 
   } catch (error) {
     console.error("Erro no SQLite:", error);
-    return res.status(500).json({ sucesso: false, mensagem: "Erro interno no servidor." });
+
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: "Erro interno no servidor."
+    });
   }
 });
 
@@ -37,7 +49,8 @@ router.post("/login", async (req, res) => {
 router.get("/logout", (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).send("Erro ao deslogar");
-    res.redirect("/"); 
+
+    res.redirect("/");
   });
 });
 

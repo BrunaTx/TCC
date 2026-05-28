@@ -8,8 +8,9 @@ const dbPromise = require("../config/db");
 router.get("/", async (req, res) => {
   try {
     const db = await dbPromise;
+
     // No SQLite, TRUE é 1. O JOIN continua igual.
-    const rows = await db.all(`
+    const rows = db.prepare(`
       SELECT 
         p.id_produto,
         p.nome,
@@ -21,9 +22,10 @@ router.get("/", async (req, res) => {
         ON p.id_categoria = c.id_categoria
       WHERE p.ativo = 1
       ORDER BY p.nome
-    `);
+    `).all();
 
     res.json(rows);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ erro: "Erro ao buscar estoque" });
@@ -39,12 +41,12 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
     const { estoque } = req.body;
 
-    await db.run(
-      "UPDATE produto SET estoque = ? WHERE id_produto = ? AND ativo = 1",
-      [estoque, id]
-    );
+    db.prepare(
+      "UPDATE produto SET estoque = ? WHERE id_produto = ? AND ativo = 1"
+    ).run(estoque, id);
 
     res.json({ message: "Estoque atualizado" });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ erro: "Erro ao atualizar estoque" });
@@ -60,46 +62,60 @@ router.post("/", async (req, res) => {
 
   try {
     // Inicia a transação no SQLite
-    await db.run("BEGIN TRANSACTION");
+    db.prepare("BEGIN TRANSACTION").run();
 
     // 1. Inserir a venda pai
-    // MySQL usa NOW(), SQLite usa CURRENT_TIMESTAMP
-    const venda = await db.run(
-      "INSERT INTO venda (id_cliente, pagamento, data) VALUES (?, ?, CURRENT_TIMESTAMP)",
-      [id_cliente, pagamento]
-    );
+    const venda = db.prepare(
+      "INSERT INTO venda (id_cliente, pagamento, data) VALUES (?, ?, CURRENT_TIMESTAMP)"
+    ).run(id_cliente, pagamento);
 
-    // No SQLite, o ID gerado fica em .lastID (no MySQL era .insertId)
-    const id_venda = venda.lastID;
+    // No better-sqlite3 o ID gerado fica em .lastInsertRowid
+    const id_venda = venda.lastInsertRowid;
 
     // 2. Loop para itens e baixa de estoque
     for (const item of itens) {
+
       // Insere o item da venda
-      await db.run(
-        `INSERT INTO venda_item 
+      db.prepare(`
+        INSERT INTO venda_item 
         (id_venda, id_produto, quantidade, preco)
-        VALUES (?, ?, ?, ?)`,
-        [id_venda, item.id_produto, item.quantidade, item.preco]
+        VALUES (?, ?, ?, ?)
+      `).run(
+        id_venda,
+        item.id_produto,
+        item.quantidade,
+        item.preco
       );
 
       // Baixa o estoque
-      await db.run(
-        `UPDATE produto
-         SET estoque = estoque - ?
-         WHERE id_produto = ?`,
-        [item.quantidade, item.id_produto]
+      db.prepare(`
+        UPDATE produto
+        SET estoque = estoque - ?
+        WHERE id_produto = ?
+      `).run(
+        item.quantidade,
+        item.id_produto
       );
     }
 
     // Finaliza a transação com sucesso
-    await db.run("COMMIT");
-    res.json({ message: "Venda registrada com sucesso", id_venda });
+    db.prepare("COMMIT").run();
+
+    res.json({
+      message: "Venda registrada com sucesso",
+      id_venda
+    });
 
   } catch (error) {
+
     // Se der erro em qualquer parte, desfaz tudo (Rollback)
-    await db.run("ROLLBACK");
+    db.prepare("ROLLBACK").run();
+
     console.error(error);
-    res.status(500).json({ erro: "Erro ao registrar venda" });
+
+    res.status(500).json({
+      erro: "Erro ao registrar venda"
+    });
   }
 });
 

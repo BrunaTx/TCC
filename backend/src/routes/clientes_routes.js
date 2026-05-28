@@ -10,14 +10,15 @@ router.get("/", async (req, res) => {
     const db = await dbPromise;
 
     // SQLite usa 1 para TRUE e 0 para FALSE por padrão
-    const rows = await db.all(`
+    const rows = db.prepare(`
       SELECT id_cliente, nome, cpf, telefone, endereco
       FROM cliente
       WHERE ativo = 1
       ORDER BY nome
-    `);
+    `).all();
 
     res.json(rows);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao listar clientes" });
@@ -36,22 +37,21 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ erro: "Nome e CPF são obrigatórios" });
     }
 
-    // Usamos .all para verificar se existe (retorna array vazio se não houver)
-    const existe = await db.all(
-      "SELECT id_cliente FROM cliente WHERE cpf = ?",
-      [cpf]
-    );
+    // Verifica se já existe
+    const existe = db.prepare(
+      "SELECT id_cliente FROM cliente WHERE cpf = ?"
+    ).all(cpf);
 
     if (existe.length > 0) {
       return res.status(400).json({ erro: "CPF já cadastrado" });
     }
 
-    await db.run(
-      "INSERT INTO cliente (nome, cpf, telefone, endereco) VALUES (?, ?, ?, ?)",
-      [nome, cpf, telefone, endereco]
-    );
+    db.prepare(
+      "INSERT INTO cliente (nome, cpf, telefone, endereco) VALUES (?, ?, ?, ?)"
+    ).run(nome, cpf, telefone, endereco);
 
     res.json({ sucesso: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao criar cliente" });
@@ -67,14 +67,14 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
     const { nome, cpf, telefone, endereco } = req.body;
 
-    await db.run(
-      `UPDATE cliente 
-       SET nome = ?, cpf = ?, telefone = ?, endereco = ?
-       WHERE id_cliente = ?`,
-      [nome, cpf, telefone, endereco, id]
-    );
+    db.prepare(`
+      UPDATE cliente 
+      SET nome = ?, cpf = ?, telefone = ?, endereco = ?
+      WHERE id_cliente = ?
+    `).run(nome, cpf, telefone, endereco, id);
 
     res.json({ sucesso: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao atualizar cliente" });
@@ -89,12 +89,12 @@ router.delete("/:id", async (req, res) => {
     const db = await dbPromise;
     const { id } = req.params;
 
-    await db.run(
-      "UPDATE cliente SET ativo = 0 WHERE id_cliente = ?",
-      [id]
-    );
+    db.prepare(
+      "UPDATE cliente SET ativo = 0 WHERE id_cliente = ?"
+    ).run(id);
 
     res.json({ sucesso: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao excluir cliente" });
@@ -109,7 +109,7 @@ router.get("/compras/:id_cliente", async (req, res) => {
     const db = await dbPromise;
     const id_cliente = req.params.id_cliente;
 
-    const vendas = await db.all(`
+    const vendas = db.prepare(`
       SELECT 
         v.id_venda,
         v.data,
@@ -124,7 +124,7 @@ router.get("/compras/:id_cliente", async (req, res) => {
       JOIN produto p ON vi.id_produto = p.id_produto
       WHERE v.id_cliente = ?
       ORDER BY v.data DESC
-    `, [id_cliente]);
+    `).all(id_cliente);
 
     const historico = {};
 
@@ -150,6 +150,7 @@ router.get("/compras/:id_cliente", async (req, res) => {
     });
 
     res.json(historico);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao buscar compras" });

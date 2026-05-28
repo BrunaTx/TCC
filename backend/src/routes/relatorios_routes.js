@@ -14,25 +14,37 @@ router.get("/", async (req, res) => {
 
     // TRADUÇÃO DA LÓGICA DE DATAS PARA SQLITE
     if (dataInicio && dataFim) {
+
       // No SQLite, date(v.data) funciona igual ao DATE(v.data) do MySQL
       filtro = "date(v.data) BETWEEN ? AND ?";
       params = [dataInicio, dataFim];
+
     } else if (tipo === "Diario") {
+
       // MySQL: CURDATE() -> SQLite: date('now')
       filtro = "date(v.data) = date('now')";
+
     } else if (tipo === "Semanal") {
+
       // MySQL: DATE_SUB(..., INTERVAL 7 DAY) -> SQLite: date('now', '-7 days')
       filtro = "date(v.data) >= date('now', '-7 days')";
+
     } else if (tipo === "Mensal") {
+
       // MySQL: MONTH() e YEAR() -> SQLite: strftime('%m', ...) e strftime('%Y', ...)
-      filtro = "strftime('%m', v.data) = strftime('%m', 'now') AND strftime('%Y', v.data) = strftime('%Y', 'now')";
+      filtro = `
+        strftime('%m', v.data) = strftime('%m', 'now')
+        AND strftime('%Y', v.data) = strftime('%Y', 'now')
+      `;
+
     } else if (tipo === "Anual") {
+
       // MySQL: YEAR() -> SQLite: strftime('%Y', ...)
       filtro = "strftime('%Y', v.data) = strftime('%Y', 'now')";
     }
 
     // Execução da query
-    const vendas = await db.all(`
+    const vendas = db.prepare(`
       SELECT 
         p.nome,
         vi.quantidade,
@@ -44,13 +56,20 @@ router.get("/", async (req, res) => {
       JOIN venda v ON v.id_venda = vi.id_venda
       WHERE ${filtro}
       ORDER BY v.data DESC
-    `, params);
+    `).all(...params);
 
     const totalVendas = vendas.length;
 
-    // A lógica de cálculo (reduce) permanece IGUAL, pois é JavaScript puro
-    const itensVendidos = vendas.reduce((s, v) => s + Number(v.quantidade), 0);
-    const faturamento = vendas.reduce((s, v) => s + (Number(v.quantidade) * Number(v.preco)), 0);
+    // A lógica de cálculo permanece IGUAL
+    const itensVendidos = vendas.reduce(
+      (s, v) => s + Number(v.quantidade),
+      0
+    );
+
+    const faturamento = vendas.reduce(
+      (s, v) => s + (Number(v.quantidade) * Number(v.preco)),
+      0
+    );
 
     res.json({
       totalVendas,
