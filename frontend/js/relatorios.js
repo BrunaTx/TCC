@@ -68,9 +68,17 @@ async function carregarRelatorio() {
       const div = document.createElement("div");
 
       const totalItem = (item.preco * Number(item.quantidade)).toFixed(2).replace(".", ",");
-      const dataVenda = new Date(item.data);
+      const dataVenda = new Date(item.data + "Z");
       const dataFormatada =
-        dataVenda.toLocaleDateString("pt-BR") + " " + dataVenda.toLocaleTimeString("pt-BR");
+  dataVenda.toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo"
+  }) +
+  " " +
+  dataVenda.toLocaleTimeString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
       let unidade, quantidade;
       if (item.tipo_venda === "kg") {

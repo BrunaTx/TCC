@@ -7,9 +7,11 @@ const path = require('path');
  */
 function configurarBanco() {
 
-  const db = new Database(
-    path.join(__dirname, '../banco_loja.db')
-  );
+  const caminhoBanco = path.join(__dirname, '../banco_loja.db');
+
+console.log("BANCO:", caminhoBanco);
+
+const db = new Database(caminhoBanco);
 
   // Habilita o suporte a chaves estrangeiras
   db.pragma('foreign_keys = ON');

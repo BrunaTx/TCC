@@ -112,7 +112,7 @@ router.get("/compras/:id_cliente", async (req, res) => {
     const vendas = db.prepare(`
       SELECT 
         v.id_venda,
-        v.data,
+        datetime(v.data, 'localtime') as data,
         v.pagamento,
         v.tipo_cartao,
         v.parcelas,

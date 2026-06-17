@@ -20,21 +20,35 @@ const produtosVendidosKg = Number(stats.produtosVendidosKg) || 0;
   const estoqueBaixoUn = Number(stats.estoqueBaixoUn) || 0;
   const estoqueBaixoKg = Number(stats.estoqueBaixoKg) || 0;
 
-document.querySelector(".stats-grid .stat-card:nth-child(1) .value").textContent = `R$ ${faturamento.toFixed(2)}`;
-document.querySelector(".stats-grid .stat-card:nth-child(1) .meta").textContent = `${vendas} vendas realizadas`;
+document.querySelector(".stats-grid .stat-card:nth-child(1) .value").textContent =
+    `R$ ${faturamento.toFixed(2)}`;
 
-document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent = Math.round(produtosVendidosUn);
-document.querySelector(".stats-grid .stat-card:nth-child(2) .meta").textContent = "unidades no total";
+document.querySelector(".stats-grid .stat-card:nth-child(1) .meta").textContent =
+    `${vendas} ${vendas === 1 ? 'Venda Realizada' : 'Vendas Realizadas'}`;
 
-document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent = 
-  Number(produtosVendidosKg.toFixed(3)).toString().replace(/\.?0+$/, '');
+document.querySelector(".stats-grid .stat-card:nth-child(2) .value").textContent =
+    Math.round(produtosVendidosUn);
 
-document.querySelector(".stats-grid .stat-card:nth-child(4) .value").textContent = estoqueBaixoUn;
-document.querySelector(".stats-grid .stat-card:nth-child(4) .meta").textContent = "produtos abaixo de 10 unidades";
+document.querySelector(".stats-grid .stat-card:nth-child(2) .meta").textContent =
+    `${Math.round(produtosVendidosUn)} ${Math.round(produtosVendidosUn) === 1 ? 'Unidade no total' : 'Unidades no total'}`;
 
-document.querySelector(".stats-grid .stat-card:nth-child(5) .value").textContent = estoqueBaixoKg;
-document.querySelector(".stats-grid .stat-card:nth-child(5) .meta").textContent = "produtos abaixo de 5 kg";
+document.querySelector(".stats-grid .stat-card:nth-child(3) .value").textContent =
+    Math.round(produtosVendidosKg);
 
+document.querySelector(".stats-grid .stat-card:nth-child(3) .meta").textContent =
+    `${Math.round(produtosVendidosKg)} ${Math.round(produtosVendidosKg) === 1 ? 'Kg no total' : 'Kg no total'}`;
+
+document.querySelector(".stats-grid .stat-card:nth-child(4) .value").textContent =
+    estoqueBaixoUn;
+
+document.querySelector(".stats-grid .stat-card:nth-child(4) .meta").textContent =
+    `${estoqueBaixoUn} ${estoqueBaixoUn === 1 ? 'Produto abaixo de 10 unidades' : 'Produtos abaixo de 10 unidades'}`;
+
+document.querySelector(".stats-grid .stat-card:nth-child(5) .value").textContent =
+    estoqueBaixoKg;
+
+document.querySelector(".stats-grid .stat-card:nth-child(5) .meta").textContent =
+    `${estoqueBaixoKg} ${estoqueBaixoKg === 1 ? 'Produto abaixo de 5 kg' : 'Produtos abaixo de 5 kg'}`;
   const resumo = document.querySelector(".summary-card p");
 
   let html = vendas === 0
@@ -48,9 +62,9 @@ document.querySelector(".stats-grid .stat-card:nth-child(5) .meta").textContent 
     stats.produtosEstoqueBaixo.forEach(prod => {
 
       let estoque = prod.tipo_venda === "un"
-        ? parseInt(prod.estoque)
-        : Number(prod.estoque);
-
+  ? parseInt(prod.estoque)
+  : parseFloat(Number(prod.estoque).toFixed(3));
+  
       let unidade = prod.tipo_venda === "kg"
         ? "kg"
         : (estoque == 1 ? "unidade" : "unidades");

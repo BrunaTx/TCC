@@ -110,7 +110,7 @@ const renderRows = (filter="todos") => {
       <td>${product.nome}</td>
       <td>${product.categoria}</td>
       <td>${product.tipo}</td>
-      <td>${product.estoque} ${product.unidade}</td>
+      <td>${parseFloat(Number(product.estoque).toFixed(3))} ${product.unidade}</td>
       <td>${status.label}</td>
       <td>
         <button class="update-btn" data-id="${product.id}">

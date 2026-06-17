@@ -28,19 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // FORMATAR DATA
   // =========================
   function formatarDataBR(data) {
-    const d = new Date(data);
+  const d = new Date(data);
+  
 
-    return d.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    }) + " às " +
-    d.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  }
-
+  return d.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  }) + " às " +
+  d.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
   // =========================
   // CARREGAR CLIENTES
   // =========================
@@ -402,8 +402,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       y += 6;
 
-      doc.text(`Pagamento: ${pagamentoDesc}`, 20, y);
-      doc.text(`Total: R$ ${valorFinal.toFixed(2).replace('.', ',')}`, 110, y);
+const pagamentoLinhas = doc.splitTextToSize(
+  `Pagamento: ${pagamentoDesc}`,
+  80
+);
+
+doc.text(pagamentoLinhas, 20, y);
+
+doc.text(
+  `Total: R$ ${valorFinal.toFixed(2).replace('.', ',')}`,
+  140,
+  y
+);
+
+y += pagamentoLinhas.length * 6 + 2;
 
       y += 8;
 

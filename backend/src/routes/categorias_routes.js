@@ -1,17 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const dbPromise = require("../config/db"); // Importa a promessa de conexão
+const dbPromise = require("../config/db");
 
 /* =========================
    LISTAR CATEGORIAS
    ========================= */
 router.get("/", async (req, res) => {
   try {
-    const db = await dbPromise; // Aguarda a conexão com o SQLite
-    
-    // Adaptado para better-sqlite3
+    const db = await dbPromise;
+
     const rows = db
-      .prepare("SELECT * FROM categoria ORDER BY nome")
+      .prepare(`
+        SELECT *
+        FROM categoria
+        WHERE ativo = 1
+        ORDER BY nome
+      `)
       .all();
 
     res.json(rows);
@@ -30,9 +34,8 @@ router.post("/", async (req, res) => {
     const db = await dbPromise;
     const { nome } = req.body;
 
-    // Adaptado para better-sqlite3
     db.prepare(
-      "INSERT INTO categoria (nome) VALUES (?)"
+      "INSERT INTO categoria (nome, ativo) VALUES (?, 1)"
     ).run(nome);
 
     res.json({ sucesso: true });
@@ -52,7 +55,6 @@ router.put("/:id", async (req, res) => {
     const id = req.params.id;
     const { nome } = req.body;
 
-    // Adaptado para better-sqlite3
     db.prepare(
       "UPDATE categoria SET nome = ? WHERE id_categoria = ?"
     ).run(nome, id);
@@ -73,9 +75,8 @@ router.delete("/:id", async (req, res) => {
     const db = await dbPromise;
     const id = req.params.id;
 
-    // Adaptado para better-sqlite3
     db.prepare(
-      "DELETE FROM categoria WHERE id_categoria = ?"
+      "UPDATE categoria SET ativo = 0 WHERE id_categoria = ?"
     ).run(id);
 
     res.json({ sucesso: true });

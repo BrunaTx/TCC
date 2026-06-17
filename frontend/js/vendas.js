@@ -132,11 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
          <div id="trocoContainer" style="display:none; margin-top:15px; padding:10px;">
     <div id="troco1" style="display:none;">
-        <strong style="color:#6f8864;">Troco Método 1: <span id="valorTroco1">R$ 0,00</span></strong>
+        <strong style="color:#6f8864;">
+            Troco Método 1:
+            <span id="valorTroco1">R$ 0,00</span>
+        </strong>
     </div>
+</div>
 
-        <div id="metodo2Container" style="display:none;">
-
+<div id="metodo2Container" style="display:none;">
             <hr><strong>Pagamento 2</strong>
 
             <div class="line-item">
@@ -193,6 +196,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p id="valorCartao2" style="font-weight:bold; font-size: 0.85em; color: #666;"></p>
 
             </div>
+            <div id="troco2" style="display:none; margin-top:5px;">
+        <strong style="color:#6f8864;">
+            Troco Método 2:
+            <span id="valorTroco2">R$ 0,00</span>
+        </strong>
+    </div>
 
         </div>
 
@@ -640,19 +649,25 @@ if (tipo === "credito") {
 
 
 
-        carrinho.push({
+        const itemExistente = carrinho.find(
+    item => item.id_produto == id
+);
 
-            id_produto: id,
+if (itemExistente) {
 
-            nome: opt.textContent.split(" - ")[0].trim(),
+    itemExistente.quantidade += qtdRaw;
 
-            preco: Number(opt.dataset.preco),
+} else {
 
-            quantidade: qtdRaw,
+    carrinho.push({
+        id_produto: id,
+        nome: opt.textContent.split(" - ")[0].trim(),
+        preco: Number(opt.dataset.preco),
+        quantidade: qtdRaw,
+        tipo: opt.dataset.tipo
+    });
 
-            tipo: opt.dataset.tipo
-
-        });
+}
 
         atualizarCarrinho();
 
